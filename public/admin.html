@@ -171,6 +171,29 @@
             <input name="alcool" type="checkbox" class="w-4 h-4 accent-gold" /> Jeu avec alcool (18+)
           </label>
 
+          <!-- ===== Achat personnalisé (bloc « Où se le procurer ») ===== -->
+          <div class="border border-gold/25 rounded-2xl overflow-hidden">
+            <button type="button" id="buyToggle" class="w-full flex items-center justify-between gap-2 px-4 py-3 bg-gold/10 hover:bg-gold/15 text-left">
+              <span class="font-display font-bold flex items-center gap-2"><i data-lucide="shopping-bag" class="w-4 h-4"></i> Achat personnalisé (avancé)</span>
+              <i data-lucide="chevron-down" id="buyChevron" class="w-4 h-4 transition-transform"></i>
+            </button>
+            <div id="buyFields" class="hidden p-4 space-y-3 bg-black/10">
+              <p class="text-xs text-cream/55">Laisse tout vide pour utiliser le comportement automatique (matériel/prix/requête déduits du type de jeu, liens de recherche Amazon/Fnac/Philibert génériques).</p>
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                <div><label class="lbl">Visuel (emoji)</label><input name="buy_visual" maxlength="4" class="fld text-center" /></div>
+                <div class="sm:col-span-2"><label class="lbl">Matériel affiché</label><input name="buy_material" maxlength="80" placeholder="Ex : Boîte Abalone (plateau + billes)" class="fld" /></div>
+                <div><label class="lbl">Prix affiché</label><input name="buy_price" maxlength="20" placeholder="≈ 30 €" class="fld" /></div>
+              </div>
+              <div><label class="lbl">Requête de recherche (pour les liens Amazon/Fnac/Philibert automatiques)</label><input name="buy_query" maxlength="120" placeholder="Ex : Abalone jeu de société" class="fld" /></div>
+              <p class="text-xs text-cream/55 pt-1">Liens directs vers un produit précis (remplacent les liens de recherche automatiques ci-dessus si renseignés — laisse vide les magasins où tu ne vends pas ce jeu) :</p>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div><label class="lbl">Lien Amazon</label><input name="buy_amazon_url" type="url" maxlength="500" placeholder="https://www.amazon.fr/..." class="fld" /></div>
+                <div><label class="lbl">Lien Fnac</label><input name="buy_fnac_url" type="url" maxlength="500" placeholder="https://www.fnac.com/..." class="fld" /></div>
+                <div><label class="lbl">Lien Philibert</label><input name="buy_philibert_url" type="url" maxlength="500" placeholder="https://www.philibertnet.com/..." class="fld" /></div>
+              </div>
+            </div>
+          </div>
+
           <!-- ===== Traduction anglaise ===== -->
           <div class="border border-gold/25 rounded-2xl overflow-hidden">
             <button type="button" id="enToggle" class="w-full flex items-center justify-between gap-2 px-4 py-3 bg-gold/10 hover:bg-gold/15 text-left">
@@ -466,6 +489,17 @@ function fillForm(g) {
   editForm.tips.value = g.tips || '';
   editForm.alcool.checked = !!g.alcool;
   editForm.type.value = g.type || 'cartes';
+  // Achat personnalisé
+  const buy = g.buy || {};
+  const buyLinks = Array.isArray(buy.links) ? buy.links : [];
+  const findLink = (name) => (buyLinks.find(l => l.name === name) || {}).url || '';
+  editForm.buy_visual.value = buy.visual || '';
+  editForm.buy_material.value = buy.material || '';
+  editForm.buy_price.value = buy.price || '';
+  editForm.buy_query.value = buy.query || '';
+  editForm.buy_amazon_url.value = findLink('Amazon');
+  editForm.buy_fnac_url.value = findLink('Fnac');
+  editForm.buy_philibert_url.value = findLink('Philibert');
   // Champs anglais
   const en = (g.translations && g.translations.en) || {};
   editForm.en_title.value = en.title || '';
@@ -490,6 +524,28 @@ function fillForm(g) {
   updateEsStatus();
 }
 
+// Construit l'objet `buy` (achat personnalisé) à partir du formulaire.
+// Les liens par magasin ne sont inclus que s'ils sont renseignés — un magasin
+// laissé vide n'apparaît pas dans le bloc d'achat si un ou plusieurs liens
+// personnalisés sont fournis pour ce jeu.
+function buildBuyPayload(fd) {
+  const buy = {
+    visual: fd.get('buy_visual') || '',
+    material: fd.get('buy_material') || '',
+    price: fd.get('buy_price') || '',
+    query: fd.get('buy_query') || '',
+  };
+  const links = [];
+  const amazonUrl = fd.get('buy_amazon_url');
+  const fnacUrl = fd.get('buy_fnac_url');
+  const philibertUrl = fd.get('buy_philibert_url');
+  if (amazonUrl) links.push({ name: 'Amazon', url: amazonUrl });
+  if (fnacUrl) links.push({ name: 'Fnac', url: fnacUrl });
+  if (philibertUrl) links.push({ name: 'Philibert', url: philibertUrl });
+  if (links.length) buy.links = links;
+  return buy;
+}
+
 // Indique si une traduction anglaise / espagnole existe (badge dans l'entête de la section).
 function updateEnStatus() {
   const hasEn = ['en_title','en_tagline','en_material','en_objective','en_rules','en_tips','en_playersLabel','en_gear']
@@ -505,6 +561,12 @@ function updateEsStatus() {
   if (hasEs) { badge.textContent = 'traduit'; badge.className = 'text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300'; }
   else { badge.textContent = 'à traduire'; badge.className = 'text-[11px] px-2 py-0.5 rounded-full bg-white/10 text-cream/60'; }
 }
+// Repli / dépli de la section achat personnalisé
+$('#buyToggle').onclick = () => {
+  const f = $('#buyFields');
+  const hidden = f.classList.toggle('hidden');
+  $('#buyChevron').style.transform = hidden ? '' : 'rotate(180deg)';
+};
 // Repli / dépli des sections de traduction
 $('#enToggle').onclick = () => {
   const f = $('#enFields');
@@ -546,6 +608,7 @@ editForm.addEventListener('submit', async (e) => {
     deck: fd.get('deck'), playersLabel: fd.get('playersLabel'), color: fd.get('color'),
     type: fd.get('type'), gear: fd.get('gear'), material: fd.get('material'), objective: fd.get('objective'),
     rules: fd.get('rules'), tips: fd.get('tips'), alcool: fd.get('alcool') === 'on',
+    buy: buildBuyPayload(fd),
     en: {
       title: fd.get('en_title'), tagline: fd.get('en_tagline'), playersLabel: fd.get('en_playersLabel'),
       gear: fd.get('en_gear'), material: fd.get('en_material'), objective: fd.get('en_objective'),

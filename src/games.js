@@ -98,6 +98,29 @@ function sanitizeGame(input) {
   }
   if (Object.keys(translations).length) g.translations = translations;
 
+  // Achat personnalisé (bloc « Où se le procurer ») : remplace le calcul
+  // automatique (matériel/prix/requête déduits du type de jeu) par des
+  // valeurs choisies dans l'admin, et/ou des liens directs vers un produit
+  // précis (au lieu d'une recherche générique Amazon/Fnac/Philibert).
+  const buyIn = input.buy;
+  if (buyIn && typeof buyIn === 'object') {
+    const buy = {};
+    for (const f of ['visual', 'material', 'price', 'query']) {
+      if (buyIn[f] != null && String(buyIn[f]).trim() !== '') {
+        buy[f] = String(buyIn[f]).trim().slice(0, 200);
+      }
+    }
+    const linksIn = Array.isArray(buyIn.links) ? buyIn.links : [];
+    const links = linksIn
+      .map((l) => ({
+        name: String((l && l.name) || '').trim().slice(0, 40),
+        url: String((l && l.url) || '').trim().slice(0, 500),
+      }))
+      .filter((l) => l.name && l.url);
+    if (links.length) buy.links = links;
+    if (Object.keys(buy).length) g.buy = buy;
+  }
+
   return { ok: errors.length === 0, game: g, errors };
 }
 

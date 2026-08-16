@@ -47,9 +47,11 @@ via un formulaire soumis à validation avant publication.
 
 ## Prérequis
 
-- **Node.js 18 ou plus** (`node -v` pour vérifier).
+- **Node.js 18 ou plus** (`node -v` pour vérifier) pour un lancement local.
+- **Docker** (+ Docker Compose) pour un déploiement en production — voir
+  « Déploiement en production » plus bas.
 
-## Installation
+## Installation (local, sans Docker)
 
 ```bash
 cd ludotech
@@ -63,6 +65,10 @@ Puis ouvrez :
 
 - Site public : http://localhost:3000
 - Espace admin : http://localhost:3000/admin
+
+> En production, l'app tourne dans Docker (voir plus bas) : les commandes
+> `npm run seed` / `npm run create-admin` restent les mêmes, mais s'exécutent
+> **à l'intérieur du conteneur** via `docker compose exec app ...`.
 
 ### Créer un compte admin (et choisir son mot de passe)
 
@@ -121,6 +127,10 @@ le bloc d'achat affilié affiché sur la fiche du jeu.
 ```
 ludotech/
 ├── package.json
+├── Dockerfile              # image Node.js de prod (voir « Déploiement »)
+├── .dockerignore
+├── compose.proxy.yaml      # service Docker derrière le reverse proxy partagé
+├── .env.prod.dist          # variables à copier en .env.prod (LUDO_JWT_SECRET)
 ├── src/
 │   ├── server.js      # serveur Express + routes API
 │   ├── db.js          # SQLite + schéma (games, users, settings)
@@ -212,8 +222,11 @@ pour savoir quoi afficher).
   active, et un champ **« Identifiant AdSense »** reçoit ton identifiant
   `ca-pub-…` fourni par Google. Les publicités ne se chargent que si les deux
   conditions sont réunies **et** que le visiteur a accepté les cookies.
+- **Google Tag Manager** : une case à cocher active le conteneur GTM, et un
+  champ reçoit l'**ID du conteneur** (`GTM-XXXXXXX`). Comme la publicité, il
+  ne se charge côté public qu'une fois les cookies acceptés.
 - **Bandeau cookies** : demande le consentement dès la première visite
-  (accepter/refuser) et ne charge les scripts publicitaires qu'après
+  (accepter/refuser) et ne charge les scripts publicitaires/GTM qu'après
   acceptation. Le choix est mémorisé dans `localStorage`
   (`ludo_cookie_consent`) et peut être rouvert via le lien « Cookies » du pied
   de page.
@@ -222,7 +235,86 @@ pour savoir quoi afficher).
   remplacer par tes informations réelles (éditeur, hébergeur, contact, durées
   de conservation…) avant toute mise en ligne.
 
-## Production (pistes)
+## Déploiement en production (Docker + reverse proxy partagé)
+
+Le projet est pensé pour tourner dans Docker, derrière un reverse proxy Caddy
+partagé (voir le dossier `proxy/` à côté de ce projet, commun à plusieurs
+sites). L'app sert en HTTP interne sur le port `3000` ; c'est le proxy qui
+gère les domaines, le HTTPS et les certificats Let's Encrypt.
+
+### 1. Récupérer le code sur le serveur
+
+```bash
+cd /var/www/ludorules      # ou l'emplacement choisi sur le VPS
+git pull                    # ou git clone la première fois
+```
+
+### 2. Configurer les variables d'environnement
+
+```bash
+cp .env.prod.dist .env.prod
+openssl rand -hex 32         # génère un secret aléatoire
+```
+
+Édite `.env.prod` et colle le secret généré dans `LUDO_JWT_SECRET` (sert à
+signer les sessions admin — à garder secret, ne jamais commiter ce fichier).
+
+### 3. Construire et démarrer le conteneur
+
+```bash
+docker compose --env-file .env.prod -f compose.proxy.yaml up -d --build
+```
+
+Ceci construit l'image à partir du `Dockerfile`, démarre le conteneur
+`ludorules-app` (alias réseau utilisé par le proxy Caddy) et monte le dossier
+`data/` en volume Docker persistant (la base SQLite survit aux rebuilds).
+
+Vérifier que ça tourne :
+
+```bash
+docker ps                                    # le conteneur doit être "Up"
+docker compose -f compose.proxy.yaml logs -f # logs en direct
+```
+
+### 4. Importer les jeux et créer un compte admin
+
+Les commandes `npm run seed` / `npm run create-admin` s'exécutent **dans le
+conteneur** via `docker compose exec` :
+
+```bash
+# Importer les 136 jeux (à faire une fois, au premier déploiement)
+docker compose --env-file .env.prod -f compose.proxy.yaml exec app npm run seed
+
+# Créer un compte admin (identifiant + mot de passe de ton choix)
+docker compose --env-file .env.prod -f compose.proxy.yaml exec app \
+  node scripts/create-admin.js monidentifiant monmotdepasse mon@email.fr
+```
+
+Pour saisir le mot de passe au clavier plutôt qu'en argument (mode
+interactif), ajoute `-it` avant `app` et lance la commande sans arguments :
+
+```bash
+docker compose --env-file .env.prod -f compose.proxy.yaml exec -it app \
+  node scripts/create-admin.js
+```
+
+`create-admin` peut être relancé à tout moment pour ajouter d'autres comptes
+admin ; `seed` ne réimporte pas les jeux déjà présents (il complète/ignore).
+
+### 5. Mettre à jour après un nouveau déploiement
+
+```bash
+cd /var/www/ludorules
+git pull
+docker compose --env-file .env.prod -f compose.proxy.yaml up -d --build
+```
+
+Le volume `ludorules_data` (base SQLite) n'est jamais touché par un rebuild.
+
+### Sans Docker / sans proxy partagé (alternative simple)
+
+Pour un déploiement mono-site plus direct (un seul serveur Node, sans Docker,
+reverse proxy Nginx classique) :
 
 - Lancez avec `NODE_ENV=production` (cookie `secure`, à servir en HTTPS).
 - Définissez `PORT` et `LUDO_JWT_SECRET` via l'environnement.
