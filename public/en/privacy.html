@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Privacy policy — Ludorules</title>
+<meta name="description" content="Privacy policy and cookie management for Ludorules." />
+<meta name="robots" content="index,follow" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { theme: { extend: {
+    colors: { felt: { DEFAULT:'#0f5132', deep:'#0a3d26', light:'#14663f' }, cream:'#f5f1e6', heart:'#e23b45', gold:'#f4c145' },
+    fontFamily: { display:['"Playfair Display"','Georgia','serif'], sans:['"Inter"','system-ui','sans-serif'] }
+  } } }
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root { color-scheme: dark; }
+  body { -webkit-font-smoothing: antialiased; }
+  .felt-bg { background: radial-gradient(1000px 500px at 20% -10%, rgba(244,193,69,.10), transparent 60%), linear-gradient(160deg,#0a3d26,#0f5132 55%,#0a3d26); }
+  .prose-legal h2 { font-family:'Playfair Display',serif; font-weight:700; font-size:1.35rem; margin:1.8rem 0 .6rem; color:#f5f1e6; }
+  .prose-legal p, .prose-legal li { color: rgba(245,241,230,.8); line-height:1.65; margin:.4rem 0; }
+  .prose-legal a { color:#f4c145; text-decoration:underline; }
+  .prose-legal ul { list-style: disc; padding-left:1.25rem; }
+  .prose-legal .todo { background: rgba(244,193,69,.12); border:1px dashed rgba(244,193,69,.5); color:#f4c145; border-radius:.4rem; padding:0 .35rem; }
+</style>
+</head>
+<body class="felt-bg min-h-screen text-cream font-sans">
+  <header class="max-w-3xl mx-auto px-4 sm:px-6 py-6 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-2 font-display font-extrabold text-xl">🃏 Ludo<span class="text-gold">rules</span></a>
+    <a href="/" class="text-sm text-cream/70 hover:text-gold transition">← Back to the site</a>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-4 sm:px-6 pb-20">
+    <h1 class="font-display font-extrabold text-4xl sm:text-5xl mb-2">Privacy policy</h1>
+    <p class="text-cream/50 text-sm mb-8">Last updated: <span class="todo">[DD/MM/YYYY]</span></p>
+
+    <div class="prose-legal">
+      <div id="legalContent">
+        <p class="text-cream/50 text-sm">Loading…</p>
+      </div>
+
+      <p class="mt-8"><a href="/en/legal-notice.html">→ See also our Legal Notice</a></p>
+    </div>
+  </main>
+  <script>
+    (function() {
+      fetch('/api/legal/confidentialite/en')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+          var el = document.getElementById('legalContent');
+          if (el && d && d.html) el.innerHTML = d.html;
+        })
+        .catch(function() { /* garde le contenu par défaut affiché */ });
+    })();
+  </script>
+</body>
+</html>

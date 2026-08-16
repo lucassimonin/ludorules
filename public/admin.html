@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin — Ludorules</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>
+  tailwind.config = {
+    theme: { extend: {
+      colors: {
+        felt: { DEFAULT: '#0f5132', deep: '#0a3d26', light: '#14663f' },
+        cream: '#f5f1e6', heart: '#e23b45', gold: '#f4c145',
+      },
+      fontFamily: {
+        display: ['"Playfair Display"', 'Georgia', 'serif'],
+        sans: ['"Inter"', 'system-ui', 'sans-serif'],
+      },
+      keyframes: { 'pop': { '0%': { transform: 'scale(.97)', opacity: 0 }, '100%': { transform: 'scale(1)', opacity: 1 } } },
+      animation: { 'pop': 'pop .2s ease both' },
+    } }
+  }
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root { color-scheme: dark; }
+  body { -webkit-font-smoothing: antialiased; }
+  .felt-bg { background: radial-gradient(1200px 600px at 20% -10%, rgba(244,193,69,.10), transparent 60%), radial-gradient(1000px 500px at 100% 0%, rgba(226,59,69,.10), transparent 55%), linear-gradient(160deg, #0a3d26, #0f5132 55%, #0a3d26); }
+  .glass { background: rgba(255,255,255,.06); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.09); }
+  .modal-scroll::-webkit-scrollbar { width: 8px; }
+  .modal-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,.18); border-radius: 8px; }
+  input, select, textarea { color-scheme: dark; }
+  .fld { width:100%; background:rgba(0,0,0,.2); border:1px solid rgba(255,255,255,.1); border-radius:.75rem; padding:.6rem .9rem; font-size:.875rem; outline:none; }
+  .fld:focus { border-color:rgba(244,193,69,.6); box-shadow:0 0 0 2px rgba(244,193,69,.2); }
+  .lbl { display:block; font-size:.7rem; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:rgba(245,241,230,.6); margin-bottom:.35rem; }
+</style>
+</head>
+<body class="felt-bg min-h-screen text-cream font-sans">
+
+  <!-- ======= ÉCRAN DE CONNEXION ======= -->
+  <div id="loginScreen" class="hidden min-h-screen flex items-center justify-center p-4">
+    <div class="glass rounded-3xl w-full max-w-sm p-8 shadow-2xl animate-pop">
+      <div class="text-center mb-6">
+        <div class="text-4xl mb-2">🃏🎲</div>
+        <h1 class="font-display font-extrabold text-2xl">Espace admin</h1>
+        <p class="text-cream/60 text-sm mt-1">Ludorules</p>
+      </div>
+      <form id="loginForm" class="space-y-4">
+        <div id="loginError" class="hidden text-sm bg-heart/20 border border-heart/40 rounded-xl px-4 py-2.5"></div>
+        <div>
+          <label class="lbl">Identifiant</label>
+          <input name="username" type="text" autocomplete="username" required class="fld" />
+        </div>
+        <div>
+          <label class="lbl">Mot de passe</label>
+          <input name="password" type="password" autocomplete="current-password" required class="fld" />
+        </div>
+        <button type="submit" class="w-full inline-flex items-center justify-center gap-2 bg-gold text-felt-deep font-semibold px-4 py-2.5 rounded-xl hover:brightness-105">
+          <i data-lucide="log-in" class="w-4 h-4"></i> Se connecter
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======= APPLICATION ======= -->
+  <div id="app" class="hidden">
+    <header class="sticky top-0 z-40 glass">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+        <a href="/" class="flex items-center gap-2 group" title="Voir le site">
+          <span class="text-2xl group-hover:rotate-6 transition-transform">🃏</span>
+          <span class="font-display font-extrabold text-xl">Ludorules <span class="text-gold">admin</span></span>
+        </a>
+        <div class="flex items-center gap-3 text-sm">
+          <a href="/" target="_blank" class="hidden sm:inline-flex items-center gap-1.5 text-cream/70 hover:text-gold"><i data-lucide="external-link" class="w-4 h-4"></i> Voir le site</a>
+          <span class="text-cream/60 hidden sm:inline">·</span>
+          <span class="text-cream/80"><i data-lucide="user" class="w-4 h-4 inline -mt-0.5"></i> <span id="whoami"></span></span>
+          <button id="logoutBtn" class="inline-flex items-center gap-1.5 bg-white/10 border border-white/15 rounded-lg px-3 py-1.5 hover:border-heart/50"><i data-lucide="log-out" class="w-4 h-4"></i> <span class="hidden sm:inline">Déconnexion</span></button>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+      <!-- Onglets -->
+      <div class="flex flex-wrap items-center gap-2 mb-5">
+        <button data-tab="published" class="tab-btn inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold"><i data-lucide="library" class="w-4 h-4"></i> Jeux publiés <span data-count="published" class="text-[11px] bg-white/15 rounded-full px-2 py-0.5">0</span></button>
+        <button data-tab="pending" class="tab-btn inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold"><i data-lucide="inbox" class="w-4 h-4"></i> À valider <span data-count="pending" class="text-[11px] bg-gold/25 text-gold rounded-full px-2 py-0.5">0</span></button>
+        <button data-tab="rejected" class="tab-btn inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold"><i data-lucide="archive" class="w-4 h-4"></i> Rejetés <span data-count="rejected" class="text-[11px] bg-white/15 rounded-full px-2 py-0.5">0</span></button>
+        <button data-tab="accounts" class="tab-btn inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold"><i data-lucide="users" class="w-4 h-4"></i> Comptes</button>
+        <button data-tab="settings" class="tab-btn inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold"><i data-lucide="settings" class="w-4 h-4"></i> Réglages</button>
+        <div class="flex-1"></div>
+        <button id="addGameBtn" class="inline-flex items-center gap-2 bg-gold text-felt-deep font-semibold px-4 py-2 rounded-xl text-sm hover:brightness-105"><i data-lucide="plus" class="w-4 h-4"></i> Nouveau jeu</button>
+      </div>
+
+      <!-- Barre de recherche (jeux) -->
+      <div id="searchBar" class="mb-4">
+        <div class="relative max-w-sm">
+          <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-cream/50"></i>
+          <input id="adminSearch" type="text" placeholder="Filtrer par nom…" class="fld pl-9" />
+        </div>
+      </div>
+
+      <div id="listArea" class="space-y-3"></div>
+      <div id="accountsArea" class="hidden"></div>
+      <div id="settingsArea" class="hidden"></div>
+    </main>
+  </div>
+
+  <!-- ======= MODALE ÉDITEUR DE JEU ======= -->
+  <div id="editModal" class="hidden fixed inset-0 z-50 items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" data-close></div>
+    <div class="relative glass rounded-3xl w-full max-w-2xl max-h-[92vh] overflow-hidden animate-pop shadow-2xl border border-white/15">
+      <div class="overflow-y-auto max-h-[92vh] modal-scroll">
+        <div class="relative bg-gradient-to-br from-felt-light to-felt-deep p-6 flex items-center justify-between">
+          <h2 id="editTitle" class="font-display font-extrabold text-2xl">Éditer le jeu</h2>
+          <button class="w-9 h-9 rounded-full bg-black/30 hover:bg-black/50 flex items-center justify-center" data-close><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <form id="editForm" class="p-6 space-y-4">
+          <div id="editError" class="hidden text-sm bg-heart/20 border border-heart/40 rounded-xl px-4 py-3"></div>
+          <div id="submitterBox" class="hidden text-sm bg-gold/10 border border-gold/30 rounded-xl px-4 py-3"></div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+            <div class="sm:col-span-3"><label class="lbl">Nom du jeu *</label><input name="title" required maxlength="80" class="fld" /></div>
+            <div><label class="lbl">Emoji</label><input name="emoji" maxlength="4" class="fld text-center" /></div>
+          </div>
+          <div><label class="lbl">Accroche *</label><input name="tagline" required maxlength="120" class="fld" /></div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div><label class="lbl">Ambiance</label>
+              <select name="mood" class="fld">
+                <option value="strategie">🧠 Stratégie</option><option value="ambiance">🎉 Fun</option>
+                <option value="enfants">🧸 Enfants</option><option value="soiree">🌙 Soirée</option>
+                <option value="alcool">🍻 Apéro 18+</option><option value="solitaire">🧘 Solo</option>
+              </select>
+            </div>
+            <div><label class="lbl">Durée</label>
+              <select name="time" class="fld"><option value="court">&lt; 15 min</option><option value="moyen">15-30 min</option><option value="long">45 min +</option></select>
+            </div>
+            <div><label class="lbl">Joueurs</label>
+              <select name="players" class="fld"><option value="1">Solo</option><option value="2">2</option><option value="3-4">3-4</option><option value="5+">5 et +</option></select>
+            </div>
+            <div><label class="lbl">Paquet</label>
+              <select name="deck" class="fld"><option value="">—</option><option value="32">32 cartes</option><option value="52">52 cartes</option><option value="tarot">Tarot</option><option value="autre">Autre</option></select>
+            </div>
+          </div>
+
+          <div><label class="lbl">Détail joueurs (ex : 3 à 6 joueurs)</label><input name="playersLabel" maxlength="60" class="fld" /></div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label class="lbl">Type de matériel</label>
+              <select name="type" class="fld">
+                <option value="cartes">🃏 Cartes</option>
+                <option value="des">🎲 Dés</option>
+                <option value="autre">🎒 Accessoires / gobelets</option>
+                <option value="aucun">🗣️ Sans matériel</option>
+                <option value="edite">📦 Jeu édité (boîte du commerce)</option>
+              </select>
+            </div>
+            <div><label class="lbl">Dégradé de couleur (Tailwind)</label><input name="color" maxlength="60" placeholder="from-felt-light to-felt-deep" class="fld" /></div>
+            <div><label class="lbl">Équipement affiché (gear/dice)</label><input name="gear" maxlength="60" placeholder="Ex : 🎲 5 dés / 🥤 Gobelets" class="fld" /></div>
+          </div>
+
+          <div><label class="lbl">Matériel *</label><textarea name="material" required rows="2" maxlength="400" class="fld"></textarea></div>
+          <div><label class="lbl">Objectif *</label><textarea name="objective" required rows="2" maxlength="400" class="fld"></textarea></div>
+          <div><label class="lbl">Règles — une par ligne *</label><textarea name="rules" required rows="6" maxlength="2500" class="fld"></textarea></div>
+          <div><label class="lbl">Astuces & stratégie</label><textarea name="tips" rows="2" maxlength="600" class="fld"></textarea></div>
+
+          <label class="flex items-center gap-2.5 text-sm text-cream/80 cursor-pointer">
+            <input name="alcool" type="checkbox" class="w-4 h-4 accent-gold" /> Jeu avec alcool (18+)
+          </label>
+
+          <!-- ===== Traduction anglaise ===== -->
+          <div class="border border-gold/25 rounded-2xl overflow-hidden">
+            <button type="button" id="enToggle" class="w-full flex items-center justify-between gap-2 px-4 py-3 bg-gold/10 hover:bg-gold/15 text-left">
+              <span class="font-display font-bold flex items-center gap-2"><span class="text-lg">🇬🇧</span> Version anglaise (EN)</span>
+              <span class="flex items-center gap-2">
+                <span id="enStatus" class="text-[11px] px-2 py-0.5 rounded-full"></span>
+                <i data-lucide="chevron-down" id="enChevron" class="w-4 h-4 transition-transform"></i>
+              </span>
+            </button>
+            <div id="enFields" class="hidden p-4 space-y-3 bg-black/10">
+              <p class="text-xs text-cream/55">Laisse vide pour utiliser le français par défaut. Ces champs alimentent la bascule FR/EN du site.</p>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div><label class="lbl">Title (EN)</label><input name="en_title" maxlength="80" class="fld" /></div>
+                <div><label class="lbl">Player detail (EN)</label><input name="en_playersLabel" maxlength="60" placeholder="e.g. 3 to 6 players" class="fld" /></div>
+              </div>
+              <div><label class="lbl">Tagline (EN)</label><input name="en_tagline" maxlength="120" class="fld" /></div>
+              <div><label class="lbl">Equipment shown (EN) — gear/dice</label><input name="en_gear" maxlength="60" placeholder="e.g. 🎲 5 dice" class="fld" /></div>
+              <div><label class="lbl">What you need (EN)</label><textarea name="en_material" rows="2" maxlength="400" class="fld"></textarea></div>
+              <div><label class="lbl">Goal (EN)</label><textarea name="en_objective" rows="2" maxlength="400" class="fld"></textarea></div>
+              <div><label class="lbl">Rules — one per line (EN)</label><textarea name="en_rules" rows="6" maxlength="2500" class="fld"></textarea></div>
+              <div><label class="lbl">Tips & strategy (EN)</label><textarea name="en_tips" rows="2" maxlength="600" class="fld"></textarea></div>
+            </div>
+          </div>
+
+          <!-- ===== Traduction espagnole ===== -->
+          <div class="border border-gold/25 rounded-2xl overflow-hidden">
+            <button type="button" id="esToggle" class="w-full flex items-center justify-between gap-2 px-4 py-3 bg-gold/10 hover:bg-gold/15 text-left">
+              <span class="font-display font-bold flex items-center gap-2"><span class="text-lg">🇪🇸</span> Version espagnole (ES)</span>
+              <span class="flex items-center gap-2">
+                <span id="esStatus" class="text-[11px] px-2 py-0.5 rounded-full"></span>
+                <i data-lucide="chevron-down" id="esChevron" class="w-4 h-4 transition-transform"></i>
+              </span>
+            </button>
+            <div id="esFields" class="hidden p-4 space-y-3 bg-black/10">
+              <p class="text-xs text-cream/55">Laisse vide pour utiliser le français par défaut. Ces champs alimentent la bascule ES du site.</p>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div><label class="lbl">Título (ES)</label><input name="es_title" maxlength="80" class="fld" /></div>
+                <div><label class="lbl">Detalle de jugadores (ES)</label><input name="es_playersLabel" maxlength="60" placeholder="ej. de 3 a 6 jugadores" class="fld" /></div>
+              </div>
+              <div><label class="lbl">Eslogan (ES)</label><input name="es_tagline" maxlength="120" class="fld" /></div>
+              <div><label class="lbl">Material mostrado (ES) — gear/dice</label><input name="es_gear" maxlength="60" placeholder="ej. 🎲 5 dados" class="fld" /></div>
+              <div><label class="lbl">Material necesario (ES)</label><textarea name="es_material" rows="2" maxlength="400" class="fld"></textarea></div>
+              <div><label class="lbl">Objetivo (ES)</label><textarea name="es_objective" rows="2" maxlength="400" class="fld"></textarea></div>
+              <div><label class="lbl">Reglas — una por línea (ES)</label><textarea name="es_rules" rows="6" maxlength="2500" class="fld"></textarea></div>
+              <div><label class="lbl">Consejos & estrategia (ES)</label><textarea name="es_tips" rows="2" maxlength="600" class="fld"></textarea></div>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap gap-2 pt-2">
+            <button type="submit" class="inline-flex items-center gap-2 bg-gold text-felt-deep font-semibold px-5 py-2.5 rounded-xl hover:brightness-105"><i data-lucide="save" class="w-4 h-4"></i> Enregistrer</button>
+            <button type="button" class="inline-flex items-center gap-2 bg-white/10 border border-white/15 px-4 py-2.5 rounded-xl hover:border-white/30" data-close>Annuler</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* ==========================================================
+   ÉTAT & UTILITAIRES
+   ========================================================== */
+const MOOD_LABELS = { strategie:'🧠 Stratégie', ambiance:'🎉 Fun', enfants:'🧸 Enfants', soiree:'🌙 Soirée', alcool:'🍻 Apéro', solitaire:'🧘 Solo' };
+const TIME_LABELS = { court:'< 15 min', moyen:'15-30 min', long:'45 min +' };
+const TYPE_LABELS = { cartes:'🃏 Cartes', des:'🎲 Dés', autre:'🎒 Accessoires', aucun:'🗣️ Sans matériel', edite:'📦 Édité' };
+
+let currentTab = 'published';
+let currentList = [];
+let editingId = null;    // null => création
+let me = null;
+
+const $ = (s) => document.querySelector(s);
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+async function api(url, opts = {}) {
+  const res = await fetch(url, {
+    headers: { 'Content-Type': 'application/json' },
+    ...opts,
+  });
+  if (res.status === 401) { showLogin(); throw new Error('Session expirée'); }
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'Erreur serveur');
+  return data;
+}
+
+/* ==========================================================
+   AUTHENTIFICATION
+   ========================================================== */
+function showLogin() {
+  $('#app').classList.add('hidden');
+  $('#loginScreen').classList.remove('hidden');
+  lucide.createIcons();
+}
+function showApp() {
+  $('#loginScreen').classList.add('hidden');
+  $('#app').classList.remove('hidden');
+  $('#whoami').textContent = me ? me.username : '';
+  lucide.createIcons();
+}
+
+$('#loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const err = $('#loginError'); err.classList.add('hidden');
+  const fd = new FormData(e.target);
+  try {
+    const data = await api('/api/auth/login', { method:'POST', body: JSON.stringify({ username: fd.get('username'), password: fd.get('password') }) });
+    me = data.user;
+    showApp();
+    loadTab('published');
+  } catch (ex) {
+    err.textContent = ex.message; err.classList.remove('hidden');
+  }
+});
+
+$('#logoutBtn').onclick = async () => {
+  await api('/api/auth/logout', { method:'POST' }).catch(()=>{});
+  me = null; showLogin();
+};
+
+/* ==========================================================
+   ONGLETS
+   ========================================================== */
+function setActiveTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    const on = b.dataset.tab === tab;
+    b.className = 'tab-btn inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold ' +
+      (on ? 'bg-gold text-felt-deep' : 'bg-white/8 border border-white/10 text-cream/80 hover:border-gold/40');
+  });
+  const isAccounts = tab === 'accounts';
+  const isSettings = tab === 'settings';
+  const isGamesList = !isAccounts && !isSettings;
+  $('#searchBar').classList.toggle('hidden', !isGamesList);
+  $('#addGameBtn').classList.toggle('hidden', !isGamesList);
+  $('#listArea').classList.toggle('hidden', !isGamesList);
+  $('#accountsArea').classList.toggle('hidden', !isAccounts);
+  $('#settingsArea').classList.toggle('hidden', !isSettings);
+  lucide.createIcons();
+}
+
+document.querySelectorAll('.tab-btn').forEach(b => b.onclick = () => loadTab(b.dataset.tab));
+
+async function loadTab(tab) {
+  setActiveTab(tab);
+  if (tab === 'accounts') return loadAccounts();
+  if (tab === 'settings') return loadSettingsTab();
+  try {
+    const data = await api('/api/admin/games?status=' + tab);
+    currentList = data.games;
+    updateCounts(data.counts);
+    renderList();
+  } catch (ex) { /* géré par api() (401) */ }
+}
+
+function updateCounts(counts) {
+  document.querySelectorAll('[data-count]').forEach(el => {
+    const k = el.dataset.count;
+    if (counts[k] != null) el.textContent = counts[k];
+  });
+}
+
+/* ==========================================================
+   LISTE DES JEUX
+   ========================================================== */
+$('#adminSearch').addEventListener('input', renderList);
+
+function renderList() {
+  const q = $('#adminSearch').value.trim().toLowerCase();
+  const list = currentList.filter(g => !q || (g.title||'').toLowerCase().includes(q));
+  const area = $('#listArea');
+
+  if (!list.length) {
+    area.innerHTML = `<div class="glass rounded-2xl p-10 text-center text-cream/60">
+      <div class="text-4xl mb-3">${currentTab==='pending'?'📭':'🃏'}</div>
+      <p>${currentTab==='pending' ? 'Aucune proposition en attente.' : (currentTab==='rejected' ? 'Aucune proposition rejetée.' : (q ? 'Aucun jeu ne correspond.' : 'Aucun jeu.'))}</p>
+    </div>`;
+    return;
+  }
+
+  area.innerHTML = list.map(g => {
+    const sub = (g._submitter_name || g._submitter_email || g._submitter_note);
+    const submitterLine = sub ? `<div class="text-xs text-gold/90 mt-1 flex items-center gap-1"><i data-lucide="user-plus" class="w-3 h-3"></i> Proposé par ${esc(g._submitter_name || 'anonyme')}${g._submitter_email ? ' · ' + esc(g._submitter_email) : ''}</div>` : '';
+    let actions = '';
+    if (currentTab === 'pending') {
+      actions = `
+        <button data-act="approve" data-id="${g.id}" class="act inline-flex items-center gap-1.5 bg-gold text-felt-deep font-semibold text-xs px-3 py-1.5 rounded-lg hover:brightness-105"><i data-lucide="check" class="w-3.5 h-3.5"></i> Valider</button>
+        <button data-act="edit" data-id="${g.id}" class="act inline-flex items-center gap-1.5 bg-white/10 border border-white/15 text-xs px-3 py-1.5 rounded-lg hover:border-white/30"><i data-lucide="pencil" class="w-3.5 h-3.5"></i> Éditer</button>
+        <button data-act="reject" data-id="${g.id}" class="act inline-flex items-center gap-1.5 bg-heart/15 border border-heart/40 text-xs px-3 py-1.5 rounded-lg hover:bg-heart/25"><i data-lucide="x" class="w-3.5 h-3.5"></i> Rejeter</button>`;
+    } else if (currentTab === 'rejected') {
+      actions = `
+        <button data-act="restore" data-id="${g.id}" class="act inline-flex items-center gap-1.5 bg-gold text-felt-deep font-semibold text-xs px-3 py-1.5 rounded-lg hover:brightness-105"><i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Republier</button>
+        <button data-act="delete" data-id="${g.id}" class="act inline-flex items-center gap-1.5 bg-heart/15 border border-heart/40 text-xs px-3 py-1.5 rounded-lg hover:bg-heart/25"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Supprimer</button>`;
+    } else {
+      actions = `
+        <button data-act="edit" data-id="${g.id}" class="act inline-flex items-center gap-1.5 bg-white/10 border border-white/15 text-xs px-3 py-1.5 rounded-lg hover:border-white/30"><i data-lucide="pencil" class="w-3.5 h-3.5"></i> Éditer</button>
+        <button data-act="unpublish" data-id="${g.id}" class="act inline-flex items-center gap-1.5 bg-white/10 border border-white/15 text-xs px-3 py-1.5 rounded-lg hover:border-white/30"><i data-lucide="eye-off" class="w-3.5 h-3.5"></i> Dépublier</button>
+        <button data-act="delete" data-id="${g.id}" class="act inline-flex items-center gap-1.5 bg-heart/15 border border-heart/40 text-xs px-3 py-1.5 rounded-lg hover:bg-heart/25"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Supprimer</button>`;
+    }
+    return `
+    <div class="glass rounded-2xl p-4 flex items-start gap-4">
+      <div class="text-3xl shrink-0">${esc(g.emoji||'🃏')}</div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2 flex-wrap">
+          <h3 class="font-display font-bold text-lg">${esc(g.title)}</h3>
+          ${g.alcool ? '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/40">18+</span>' : ''}
+        </div>
+        <p class="text-sm text-cream/70 truncate">${esc(g.tagline)}</p>
+        <div class="flex flex-wrap gap-1.5 mt-2 text-[11px] text-cream/70">
+          <span class="bg-white/10 px-2 py-0.5 rounded">${MOOD_LABELS[g.mood]||g.mood||''}</span>
+          <span class="bg-white/10 px-2 py-0.5 rounded">${TIME_LABELS[g.time]||g.time||''}</span>
+          <span class="bg-white/10 px-2 py-0.5 rounded">${esc(g.playersLabel||g.players||'')}</span>
+          <span class="bg-white/10 px-2 py-0.5 rounded">${(g.rules||[]).length} règle(s)</span>
+          ${g.type ? `<span class="bg-white/10 px-2 py-0.5 rounded">${TYPE_LABELS[g.type]||g.type}</span>` : ''}
+          ${g.translations && g.translations.en ? '<span class="bg-emerald-500/15 text-emerald-300 px-2 py-0.5 rounded">EN ✓</span>' : '<span class="bg-white/5 text-cream/45 px-2 py-0.5 rounded">EN —</span>'}
+          ${g.translations && g.translations.es ? '<span class="bg-emerald-500/15 text-emerald-300 px-2 py-0.5 rounded">ES ✓</span>' : '<span class="bg-white/5 text-cream/45 px-2 py-0.5 rounded">ES —</span>'}
+        </div>
+        ${submitterLine}
+        ${g._submitter_note ? `<div class="text-xs text-cream/55 mt-1 italic">« ${esc(g._submitter_note)} »</div>` : ''}
+      </div>
+      <div class="flex flex-col sm:flex-row flex-wrap gap-2 shrink-0">${actions}</div>
+    </div>`;
+  }).join('');
+
+  area.querySelectorAll('.act').forEach(btn => btn.onclick = () => handleAction(btn.dataset.act, btn.dataset.id));
+  lucide.createIcons();
+}
+
+async function handleAction(act, id) {
+  try {
+    if (act === 'edit') return openEditor(id);
+    if (act === 'approve') { await api(`/api/admin/games/${id}/approve`, { method:'POST' }); }
+    else if (act === 'reject') { await api(`/api/admin/games/${id}/reject`, { method:'POST' }); }
+    else if (act === 'restore') { await api(`/api/admin/games/${id}/status`, { method:'POST', body: JSON.stringify({ status:'published' }) }); }
+    else if (act === 'unpublish') {
+      if (!confirm('Dépublier ce jeu ? Il repassera dans la file « À valider ».')) return;
+      await api(`/api/admin/games/${id}/status`, { method:'POST', body: JSON.stringify({ status:'pending' }) });
+    }
+    else if (act === 'delete') {
+      if (!confirm('Supprimer définitivement ce jeu ? Cette action est irréversible.')) return;
+      await api(`/api/admin/games/${id}`, { method:'DELETE' });
+    }
+    loadTab(currentTab);
+  } catch (ex) { alert(ex.message); }
+}
+
+/* ==========================================================
+   ÉDITEUR DE JEU (création + modification)
+   ========================================================== */
+const editModal = $('#editModal');
+const editForm = $('#editForm');
+
+function openEditorNew() {
+  editingId = null;
+  $('#editTitle').textContent = 'Nouveau jeu';
+  $('#submitterBox').classList.add('hidden');
+  editForm.reset();
+  updateEnStatus();
+  updateEsStatus();
+  $('#editError').classList.add('hidden');
+  showEditModal();
+}
+
+async function openEditor(id) {
+  try {
+    const data = await api('/api/admin/games/' + id);
+    editingId = id;
+    $('#editTitle').textContent = 'Éditer : ' + data.game.title;
+    fillForm(data.game);
+    const sb = $('#submitterBox');
+    const s = data.submitter || {};
+    if (s.name || s.email || s.note) {
+      sb.innerHTML = `<strong>Proposé par :</strong> ${esc(s.name||'anonyme')}${s.email? ' · '+esc(s.email):''}${s.note? '<br><em>« '+esc(s.note)+' »</em>':''}`;
+      sb.classList.remove('hidden');
+    } else sb.classList.add('hidden');
+    $('#editError').classList.add('hidden');
+    showEditModal();
+  } catch (ex) { alert(ex.message); }
+}
+
+function fillForm(g) {
+  editForm.title.value = g.title || '';
+  editForm.emoji.value = g.emoji || '';
+  editForm.tagline.value = g.tagline || '';
+  editForm.mood.value = g.mood || 'ambiance';
+  editForm.time.value = g.time || 'court';
+  editForm.players.value = g.players || '2';
+  editForm.deck.value = g.deck || '';
+  editForm.playersLabel.value = g.playersLabel || '';
+  editForm.color.value = g.color || '';
+  editForm.gear.value = g.gear || g.dice || '';
+  editForm.material.value = g.material || '';
+  editForm.objective.value = g.objective || '';
+  editForm.rules.value = (g.rules || []).join('\n');
+  editForm.tips.value = g.tips || '';
+  editForm.alcool.checked = !!g.alcool;
+  editForm.type.value = g.type || 'cartes';
+  // Champs anglais
+  const en = (g.translations && g.translations.en) || {};
+  editForm.en_title.value = en.title || '';
+  editForm.en_tagline.value = en.tagline || '';
+  editForm.en_playersLabel.value = en.playersLabel || '';
+  editForm.en_gear.value = en.gear || en.dice || '';
+  editForm.en_material.value = en.material || '';
+  editForm.en_objective.value = en.objective || '';
+  editForm.en_rules.value = (en.rules || []).join('\n');
+  editForm.en_tips.value = en.tips || '';
+  updateEnStatus();
+  // Champs espagnols
+  const es = (g.translations && g.translations.es) || {};
+  editForm.es_title.value = es.title || '';
+  editForm.es_tagline.value = es.tagline || '';
+  editForm.es_playersLabel.value = es.playersLabel || '';
+  editForm.es_gear.value = es.gear || es.dice || '';
+  editForm.es_material.value = es.material || '';
+  editForm.es_objective.value = es.objective || '';
+  editForm.es_rules.value = (es.rules || []).join('\n');
+  editForm.es_tips.value = es.tips || '';
+  updateEsStatus();
+}
+
+// Indique si une traduction anglaise / espagnole existe (badge dans l'entête de la section).
+function updateEnStatus() {
+  const hasEn = ['en_title','en_tagline','en_material','en_objective','en_rules','en_tips','en_playersLabel','en_gear']
+    .some(n => (editForm[n] && editForm[n].value.trim() !== ''));
+  const badge = $('#enStatus');
+  if (hasEn) { badge.textContent = 'traduit'; badge.className = 'text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300'; }
+  else { badge.textContent = 'à traduire'; badge.className = 'text-[11px] px-2 py-0.5 rounded-full bg-white/10 text-cream/60'; }
+}
+function updateEsStatus() {
+  const hasEs = ['es_title','es_tagline','es_material','es_objective','es_rules','es_tips','es_playersLabel','es_gear']
+    .some(n => (editForm[n] && editForm[n].value.trim() !== ''));
+  const badge = $('#esStatus');
+  if (hasEs) { badge.textContent = 'traduit'; badge.className = 'text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300'; }
+  else { badge.textContent = 'à traduire'; badge.className = 'text-[11px] px-2 py-0.5 rounded-full bg-white/10 text-cream/60'; }
+}
+// Repli / dépli des sections de traduction
+$('#enToggle').onclick = () => {
+  const f = $('#enFields');
+  const hidden = f.classList.toggle('hidden');
+  $('#enChevron').style.transform = hidden ? '' : 'rotate(180deg)';
+};
+$('#esToggle').onclick = () => {
+  const f = $('#esFields');
+  const hidden = f.classList.toggle('hidden');
+  $('#esChevron').style.transform = hidden ? '' : 'rotate(180deg)';
+};
+document.addEventListener('input', (e) => {
+  if (e.target.name && e.target.name.startsWith('en_')) updateEnStatus();
+  if (e.target.name && e.target.name.startsWith('es_')) updateEsStatus();
+});
+
+function showEditModal() {
+  editModal.classList.remove('hidden');
+  editModal.classList.add('flex');
+  document.body.style.overflow = 'hidden';
+  lucide.createIcons();
+}
+function closeEditModal() {
+  editModal.classList.add('hidden');
+  editModal.classList.remove('flex');
+  document.body.style.overflow = '';
+}
+editModal.querySelectorAll('[data-close]').forEach(el => el.onclick = closeEditModal);
+$('#addGameBtn').onclick = openEditorNew;
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !editModal.classList.contains('hidden')) closeEditModal(); });
+
+editForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const err = $('#editError'); err.classList.add('hidden');
+  const fd = new FormData(editForm);
+  const payload = {
+    title: fd.get('title'), emoji: fd.get('emoji'), tagline: fd.get('tagline'),
+    mood: fd.get('mood'), time: fd.get('time'), players: fd.get('players'),
+    deck: fd.get('deck'), playersLabel: fd.get('playersLabel'), color: fd.get('color'),
+    type: fd.get('type'), gear: fd.get('gear'), material: fd.get('material'), objective: fd.get('objective'),
+    rules: fd.get('rules'), tips: fd.get('tips'), alcool: fd.get('alcool') === 'on',
+    en: {
+      title: fd.get('en_title'), tagline: fd.get('en_tagline'), playersLabel: fd.get('en_playersLabel'),
+      gear: fd.get('en_gear'), material: fd.get('en_material'), objective: fd.get('en_objective'),
+      rules: fd.get('en_rules'), tips: fd.get('en_tips'),
+    },
+    es: {
+      title: fd.get('es_title'), tagline: fd.get('es_tagline'), playersLabel: fd.get('es_playersLabel'),
+      gear: fd.get('es_gear'), material: fd.get('es_material'), objective: fd.get('es_objective'),
+      rules: fd.get('es_rules'), tips: fd.get('es_tips'),
+    },
+  };
+  try {
+    if (editingId) await api('/api/admin/games/' + editingId, { method:'PUT', body: JSON.stringify(payload) });
+    else await api('/api/admin/games', { method:'POST', body: JSON.stringify(payload) });
+    closeEditModal();
+    loadTab(currentTab);
+  } catch (ex) { err.textContent = ex.message; err.classList.remove('hidden'); }
+});
+
+/* ==========================================================
+   COMPTES ADMIN
+   ========================================================== */
+async function loadAccounts() {
+  try {
+    const data = await api('/api/auth/users');
+    const area = $('#accountsArea');
+    area.innerHTML = `
+      <div class="glass rounded-2xl p-5 mb-4">
+        <h3 class="font-display font-bold text-lg mb-3 flex items-center gap-2"><i data-lucide="user-plus" class="w-5 h-5 text-gold"></i> Nouvel administrateur</h3>
+        <form id="userForm" class="grid grid-cols-1 sm:grid-cols-4 gap-3 items-end">
+          <div><label class="lbl">Identifiant *</label><input name="username" required class="fld" /></div>
+          <div><label class="lbl">Email</label><input name="email" type="email" class="fld" /></div>
+          <div><label class="lbl">Mot de passe *</label><input name="password" type="password" required minlength="6" class="fld" /></div>
+          <button type="submit" class="inline-flex items-center justify-center gap-2 bg-gold text-felt-deep font-semibold px-4 py-2.5 rounded-xl hover:brightness-105"><i data-lucide="plus" class="w-4 h-4"></i> Créer</button>
+        </form>
+        <p id="userErr" class="hidden text-sm text-heart mt-2"></p>
+      </div>
+      <div class="glass rounded-2xl divide-y divide-white/10">
+        ${data.users.map(u => `
+          <div class="flex items-center justify-between gap-4 p-4">
+            <div>
+              <div class="font-semibold">${esc(u.username)} ${u.id===me.id?'<span class="text-[11px] text-gold">(vous)</span>':''}</div>
+              <div class="text-xs text-cream/60">${esc(u.email||'—')} · créé le ${esc((u.created_at||'').slice(0,10))}</div>
+            </div>
+            ${u.id!==me.id && data.users.length>1 ? `<button data-del-user="${u.id}" class="inline-flex items-center gap-1.5 bg-heart/15 border border-heart/40 text-xs px-3 py-1.5 rounded-lg hover:bg-heart/25"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Supprimer</button>` : '<span class="text-xs text-cream/40">—</span>'}
+          </div>`).join('')}
+      </div>`;
+    $('#userForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const ue = $('#userErr'); ue.classList.add('hidden');
+      const fd = new FormData(e.target);
+      try {
+        await api('/api/auth/users', { method:'POST', body: JSON.stringify({ username: fd.get('username'), email: fd.get('email'), password: fd.get('password') }) });
+        loadAccounts();
+      } catch (ex) { ue.textContent = ex.message; ue.classList.remove('hidden'); }
+    });
+    area.querySelectorAll('[data-del-user]').forEach(btn => btn.onclick = async () => {
+      if (!confirm('Supprimer ce compte administrateur ?')) return;
+      try { await api('/api/auth/users/' + btn.dataset.delUser, { method:'DELETE' }); loadAccounts(); }
+      catch (ex) { alert(ex.message); }
+    });
+    lucide.createIcons();
+  } catch (ex) {}
+}
+
+/* ==========================================================
+   RÉGLAGES (affiliation, publicité, pages légales)
+   ========================================================== */
+const LEGAL_PAGE_LABELS = { mentions: 'Mentions légales', confidentialite: 'Politique de confidentialité' };
+const LEGAL_LANG_LABELS = { fr: '🇫🇷 Français', en: '🇬🇧 English', es: '🇪🇸 Español' };
+let legalCache = null; // { mentions: {fr,en,es}, confidentialite: {fr,en,es} }
+
+async function loadSettingsTab() {
+  const area = $('#settingsArea');
+  area.innerHTML = `
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+      <div class="glass rounded-2xl p-5">
+        <h3 class="font-display font-bold text-lg mb-1 flex items-center gap-2"><i data-lucide="shopping-bag" class="w-5 h-5 text-gold"></i> Où se le procurer (affiliation)</h3>
+        <p class="text-xs text-cream/55 mb-3">Bloc « Où se le procurer » avec liens Amazon / Fnac / Philibert, affiché sur chaque fiche jeu.</p>
+        <form id="affForm" class="space-y-3">
+          <label class="flex items-center gap-2.5 text-sm text-cream/80 cursor-pointer">
+            <input name="affiliateEnabled" type="checkbox" class="w-4 h-4 accent-gold" /> Afficher le bloc d'achat sur le site
+          </label>
+          <div>
+            <label class="lbl">Tag d'affiliation Amazon (ex : monsite-21)</label>
+            <input name="amazonTag" maxlength="60" placeholder="monsite-21" class="fld" />
+          </div>
+          <button type="submit" class="inline-flex items-center gap-2 bg-gold text-felt-deep font-semibold px-4 py-2 rounded-xl text-sm hover:brightness-105"><i data-lucide="save" class="w-4 h-4"></i> Enregistrer</button>
+          <span id="affSaved" class="hidden text-xs text-emerald-300 ml-2">✓ Enregistré</span>
+        </form>
+      </div>
+
+      <div class="glass rounded-2xl p-5">
+        <h3 class="font-display font-bold text-lg mb-1 flex items-center gap-2"><i data-lucide="megaphone" class="w-5 h-5 text-gold"></i> Publicité</h3>
+        <p class="text-xs text-cream/55 mb-3">Emplacements publicitaires (Google AdSense), masqués par défaut. Désactive-les à tout moment ici, sans toucher au code.</p>
+        <form id="adsForm" class="space-y-3">
+          <label class="flex items-center gap-2.5 text-sm text-cream/80 cursor-pointer">
+            <input name="adsEnabled" type="checkbox" class="w-4 h-4 accent-gold" /> Activer les emplacements publicitaires
+          </label>
+          <div>
+            <label class="lbl">Identifiant client AdSense (ex : ca-pub-XXXXXXXXXXXXXXXX)</label>
+            <input name="adsenseClient" maxlength="60" placeholder="ca-pub-XXXXXXXXXXXXXXXX" class="fld" />
+          </div>
+          <button type="submit" class="inline-flex items-center gap-2 bg-gold text-felt-deep font-semibold px-4 py-2 rounded-xl text-sm hover:brightness-105"><i data-lucide="save" class="w-4 h-4"></i> Enregistrer</button>
+          <span id="adsSaved" class="hidden text-xs text-emerald-300 ml-2">✓ Enregistré</span>
+        </form>
+      </div>
+
+      <div class="glass rounded-2xl p-5">
+        <h3 class="font-display font-bold text-lg mb-1 flex items-center gap-2"><i data-lucide="tag" class="w-5 h-5 text-gold"></i> Google Tag Manager</h3>
+        <p class="text-xs text-cream/55 mb-3">Conteneur GTM chargé sur le site public, uniquement après acceptation des cookies (comme la publicité). Pilote ensuite tes autres tags (Analytics, pixels…) directement depuis l'interface GTM.</p>
+        <form id="gtmForm" class="space-y-3">
+          <label class="flex items-center gap-2.5 text-sm text-cream/80 cursor-pointer">
+            <input name="gtmEnabled" type="checkbox" class="w-4 h-4 accent-gold" /> Activer Google Tag Manager
+          </label>
+          <div>
+            <label class="lbl">ID du conteneur (ex : GTM-XXXXXXX)</label>
+            <input name="gtmId" maxlength="30" placeholder="GTM-XXXXXXX" class="fld" />
+          </div>
+          <button type="submit" class="inline-flex items-center gap-2 bg-gold text-felt-deep font-semibold px-4 py-2 rounded-xl text-sm hover:brightness-105"><i data-lucide="save" class="w-4 h-4"></i> Enregistrer</button>
+          <span id="gtmSaved" class="hidden text-xs text-emerald-300 ml-2">✓ Enregistré</span>
+        </form>
+      </div>
+    </div>
+
+    <div class="glass rounded-2xl p-5">
+      <h3 class="font-display font-bold text-lg mb-1 flex items-center gap-2"><i data-lucide="scale" class="w-5 h-5 text-gold"></i> Pages légales</h3>
+      <p class="text-xs text-cream/55 mb-3">Modifie le contenu des Mentions légales et de la Politique de confidentialité, dans chacune des 3 langues, sans toucher au code. Le HTML simple est autorisé (&lt;p&gt;, &lt;strong&gt;, &lt;a&gt;, &lt;ul&gt;/&lt;li&gt;, &lt;h2&gt;…).</p>
+      <div class="flex flex-wrap gap-3 mb-3">
+        <div>
+          <label class="lbl">Page</label>
+          <select id="legalSlugSel" class="fld">
+            <option value="mentions">Mentions légales</option>
+            <option value="confidentialite">Politique de confidentialité</option>
+          </select>
+        </div>
+        <div>
+          <label class="lbl">Langue</label>
+          <select id="legalLangSel" class="fld">
+            <option value="fr">🇫🇷 Français</option>
+            <option value="en">🇬🇧 English</option>
+            <option value="es">🇪🇸 Español</option>
+          </select>
+        </div>
+      </div>
+      <form id="legalForm" class="space-y-3">
+        <textarea id="legalHtml" rows="16" class="fld font-mono text-xs"></textarea>
+        <button type="submit" class="inline-flex items-center gap-2 bg-gold text-felt-deep font-semibold px-4 py-2 rounded-xl text-sm hover:brightness-105"><i data-lucide="save" class="w-4 h-4"></i> Enregistrer cette page</button>
+        <span id="legalSaved" class="hidden text-xs text-emerald-300 ml-2">✓ Enregistré</span>
+      </form>
+    </div>
+  `;
+
+  const affForm = $('#affForm');
+  const adsForm = $('#adsForm');
+  const gtmForm = $('#gtmForm');
+  try {
+    const s = await api('/api/settings');
+    affForm.affiliateEnabled.checked = !!s.affiliateEnabled;
+    affForm.amazonTag.value = s.amazonTag || '';
+    adsForm.adsEnabled.checked = !!s.adsEnabled;
+    adsForm.adsenseClient.value = s.adsenseClient || '';
+    gtmForm.gtmEnabled.checked = !!s.gtmEnabled;
+    gtmForm.gtmId.value = s.gtmId || '';
+  } catch (ex) { /* géré par api() (401) */ }
+
+  affForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    try {
+      await api('/api/admin/settings', { method:'PUT', body: JSON.stringify({
+        affiliateEnabled: affForm.affiliateEnabled.checked,
+        amazonTag: affForm.amazonTag.value,
+      }) });
+      flashSaved('#affSaved');
+    } catch (ex) { alert(ex.message); }
+  });
+  adsForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    try {
+      await api('/api/admin/settings', { method:'PUT', body: JSON.stringify({
+        adsEnabled: adsForm.adsEnabled.checked,
+        adsenseClient: adsForm.adsenseClient.value,
+      }) });
+      flashSaved('#adsSaved');
+    } catch (ex) { alert(ex.message); }
+  });
+  gtmForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    try {
+      await api('/api/admin/settings', { method:'PUT', body: JSON.stringify({
+        gtmEnabled: gtmForm.gtmEnabled.checked,
+        gtmId: gtmForm.gtmId.value,
+      }) });
+      flashSaved('#gtmSaved');
+    } catch (ex) { alert(ex.message); }
+  });
+
+  try {
+    legalCache = await api('/api/admin/legal');
+  } catch (ex) { legalCache = null; }
+
+  function fillLegalTextarea() {
+    const slug = $('#legalSlugSel').value;
+    const lang = $('#legalLangSel').value;
+    $('#legalHtml').value = (legalCache && legalCache[slug] && legalCache[slug][lang]) || '';
+  }
+  fillLegalTextarea();
+  $('#legalSlugSel').onchange = fillLegalTextarea;
+  $('#legalLangSel').onchange = fillLegalTextarea;
+
+  $('#legalForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const slug = $('#legalSlugSel').value;
+    const lang = $('#legalLangSel').value;
+    try {
+      const data = await api(`/api/admin/legal/${slug}/${lang}`, { method:'PUT', body: JSON.stringify({ html: $('#legalHtml').value }) });
+      if (legalCache) { legalCache[slug] = legalCache[slug] || {}; legalCache[slug][lang] = data.html; }
+      flashSaved('#legalSaved');
+    } catch (ex) { alert(ex.message); }
+  });
+
+  lucide.createIcons();
+}
+
+function flashSaved(sel) {
+  const el = $(sel);
+  el.classList.remove('hidden');
+  setTimeout(() => el.classList.add('hidden'), 2500);
+}
+
+/* ==========================================================
+   DÉMARRAGE
+   ========================================================== */
+(async function init() {
+  try {
+    const data = await api('/api/auth/me');
+    me = data.user;
+    showApp();
+    loadTab('published');
+  } catch (ex) {
+    showLogin();
+  }
+})();
+</script>
+</body>
+</html>

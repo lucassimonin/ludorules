@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ludorules — Jeux de cartes & de dés</title>
+<meta name="description" content="Trouve le jeu de cartes ou de dés parfait selon le matériel, le nombre de joueurs, l'ambiance et le temps disponible. Règles complètes incluses." />
+<link rel="canonical" href="https://ludorules.com/" />
+<meta name="theme-color" content="#0a3d26" />
+<meta name="robots" content="index,follow" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Ludorules" />
+<meta property="og:locale" content="fr_FR" />
+<meta property="og:title" content="Ludorules — Jeux de cartes & de dés" />
+<meta property="og:description" content="Trouve le jeu de cartes ou de dés parfait selon le matériel, le nombre de joueurs, l'ambiance et le temps disponible." />
+<meta property="og:url" content="https://ludorules.com/" />
+<meta name="twitter:card" content="summary_large_image" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🃏</text></svg>" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          felt:   { DEFAULT: '#0f5132', deep: '#0a3d26', light: '#14663f' },
+          cream:  '#f5f1e6',
+          heart:  '#e23b45',
+          gold:   '#f4c145',
+        },
+        fontFamily: {
+          display: ['"Playfair Display"', 'Georgia', 'serif'],
+          sans: ['"Inter"', 'system-ui', 'sans-serif'],
+        },
+        keyframes: {
+          'fade-up': { '0%': { opacity: 0, transform: 'translateY(12px)' }, '100%': { opacity: 1, transform: 'translateY(0)' } },
+          'pop': { '0%': { transform: 'scale(.96)', opacity: 0 }, '100%': { transform: 'scale(1)', opacity: 1 } },
+          'flip': { '0%': { transform: 'rotateY(90deg)', opacity: 0 }, '100%': { transform: 'rotateY(0)', opacity: 1 } },
+        },
+        animation: {
+          'fade-up': 'fade-up .5s ease both',
+          'pop': 'pop .25s ease both',
+          'flip': 'flip .4s ease both',
+        }
+      }
+    }
+  }
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root { color-scheme: dark; }
+  html { scroll-behavior: smooth; }
+  body { -webkit-font-smoothing: antialiased; }
+  .felt-bg {
+    background:
+      radial-gradient(1200px 600px at 20% -10%, rgba(244,193,69,.10), transparent 60%),
+      radial-gradient(1000px 500px at 100% 0%, rgba(226,59,69,.10), transparent 55%),
+      linear-gradient(160deg, #0a3d26, #0f5132 55%, #0a3d26);
+  }
+  .felt-bg::before {
+    content: ""; position: fixed; inset: 0; pointer-events: none; opacity: .04;
+    background-image: radial-gradient(currentColor 1px, transparent 1px);
+    background-size: 22px 22px; color: #fff;
+  }
+  .glass { background: rgba(255,255,255,.06); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.09); }
+  .card-hover { transition: transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s, border-color .25s; }
+  .card-hover:hover { transform: translateY(-6px) rotate(-.4deg); box-shadow: 0 20px 40px -18px rgba(0,0,0,.7); }
+  .chip { transition: all .15s ease; }
+  .chip:active { transform: scale(.95); }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  .modal-scroll::-webkit-scrollbar { width: 8px; }
+  .modal-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,.18); border-radius: 8px; }
+  ol.prose-rules { list-style: decimal; padding-left: 1.35rem; }
+  ol.prose-rules li { margin: .4rem 0; padding-left: .25rem; }
+  ol.prose-rules li::marker { color: #f4c145; font-weight: 700; }
+  /* --- Emplacements publicitaires (placeholders : y coller le code AdSense/Ezoic) --- */
+  .ad-slot { display:flex; align-items:center; justify-content:center; text-align:center;
+    min-height:90px; border:1px dashed rgba(255,255,255,.18); border-radius:14px;
+    background:rgba(255,255,255,.03); color:rgba(245,241,230,.4);
+    font-size:11px; letter-spacing:.04em; text-transform:uppercase; line-height:1.4; padding:8px; }
+  /* Les emplacements restent invisibles tant qu'une régie n'est pas configurée et acceptée. */
+  .ad-slot { display:none; }
+  html.ads-enabled .ad-slot { display:flex; }
+  /* --- Boutons d'achat affiliés --- */
+  .buy-btn { display:flex; align-items:center; justify-content:center; gap:.45rem; width:100%;
+    padding:.6rem .8rem; border-radius:.75rem; font-weight:700; font-size:.85rem;
+    transition:transform .15s ease, filter .15s ease; }
+  .buy-btn:hover { filter:brightness(1.08); transform:translateY(-1px); }
+</style>
+</head>
+<body class="felt-bg min-h-screen text-cream font-sans selection:bg-gold selection:text-felt-deep">
+
+  <!-- ============ HEADER ============ -->
+  <header class="sticky top-0 z-40 glass">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+      <a href="#" class="flex items-center gap-2 group">
+        <span class="text-2xl leading-none group-hover:rotate-6 transition-transform">🃏</span>
+        <span class="font-display font-extrabold text-xl tracking-tight">
+          Ludo<span class="text-gold">rules</span>
+        </span>
+      </a>
+      <div class="hidden md:flex items-center gap-2 text-sm text-cream/70">
+        <span class="text-heart">♥</span><span>♠</span><span class="text-heart">♦</span><span>♣</span><span class="ml-1">🎲</span>
+        <span class="ml-2" data-i18n="header.tagline">Le catalogue ultime des jeux de cartes &amp; de dés</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <div id="langToggle" class="flex items-center bg-black/20 border border-white/10 rounded-full p-0.5 text-xs font-semibold">
+          <button data-lang="fr" class="lang-btn px-2.5 py-1 rounded-full transition">FR</button>
+          <button data-lang="en" class="lang-btn px-2.5 py-1 rounded-full transition">EN</button>
+          <button data-lang="es" class="lang-btn px-2.5 py-1 rounded-full transition">ES</button>
+        </div>
+        <button id="proposeBtn" class="chip inline-flex items-center gap-2 bg-white/10 border border-white/15 text-cream font-semibold text-sm px-4 py-2 rounded-full hover:border-gold/50 hover:bg-white/15">
+          <i data-lucide="plus-circle" class="w-4 h-4"></i>
+          <span class="hidden sm:inline" data-i18n="btn.propose">Proposer un jeu</span>
+          <span class="sm:hidden" data-i18n="btn.propose.short">Proposer</span>
+        </button>
+        <button id="randomBtn" class="chip inline-flex items-center gap-2 bg-gold text-felt-deep font-semibold text-sm px-4 py-2 rounded-full shadow-lg hover:shadow-gold/40 hover:brightness-105">
+          <i data-lucide="sparkles" class="w-4 h-4"></i>
+          <span data-i18n="btn.random">Inspire-moi !</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ HERO ============ -->
+  <section class="max-w-3xl mx-auto px-4 sm:px-6 pt-10 sm:pt-14 pb-2 text-center animate-fade-up">
+    <h1 class="font-display font-extrabold text-4xl sm:text-5xl leading-tight tracking-tight" data-i18n="hero.h1">
+      Trouve ton jeu <span class="text-gold">en 10&nbsp;secondes</span>.
+    </h1>
+    <p class="mt-4 text-cream/75 max-w-xl mx-auto text-base sm:text-lg" data-i18n="hero.sub">
+      Cartes ou dés, à 2 ou à 10, tranquille ou déchaîné&nbsp;— dis-nous ton envie,
+      on s'occupe des règles.
+    </p>
+    <p id="gameCountBadge" class="mt-3 text-xs text-cream/50">— jeux prêts à jouer</p>
+  </section>
+
+  <!-- ============ FILTERS ============ -->
+  <section class="max-w-6xl mx-auto px-4 sm:px-6 pt-4 pb-2 sticky top-16 z-30">
+    <div class="glass rounded-2xl p-3 sm:p-4 shadow-xl">
+      <div class="flex flex-col gap-2.5">
+        <div class="flex flex-wrap bg-black/20 border border-white/10 rounded-xl p-1 gap-1 justify-center" id="materialToggle">
+          <button data-mat="all" data-i18n-title="mat.all" title="Tous" class="mat-btn text-xs sm:text-sm px-3 py-1.5 rounded-lg transition whitespace-nowrap">🎯<span class="hidden sm:inline" data-i18n="mat.all"> Tous</span></button>
+          <button data-mat="cartes" data-i18n-title="mat.cartes" title="Cartes" class="mat-btn text-xs sm:text-sm px-3 py-1.5 rounded-lg transition whitespace-nowrap">🃏<span class="hidden sm:inline" data-i18n="mat.cartes"> Cartes</span></button>
+          <button data-mat="des" data-i18n-title="mat.des" title="Dés" class="mat-btn text-xs sm:text-sm px-3 py-1.5 rounded-lg transition whitespace-nowrap">🎲<span class="hidden sm:inline" data-i18n="mat.des"> Dés</span></button>
+          <button data-mat="gobelets" data-i18n-title="mat.gobelets" title="Gobelets" class="mat-btn text-xs sm:text-sm px-3 py-1.5 rounded-lg transition whitespace-nowrap">🥤<span class="hidden sm:inline" data-i18n="mat.gobelets"> Gobelets</span></button>
+          <button data-mat="autre" data-i18n-title="mat.autre" title="Accessoires" class="mat-btn text-xs sm:text-sm px-3 py-1.5 rounded-lg transition whitespace-nowrap">🎒<span class="hidden sm:inline" data-i18n="mat.autre"> Accessoires</span></button>
+          <button data-mat="aucun" data-i18n-title="mat.aucun" title="Sans matériel" class="mat-btn text-xs sm:text-sm px-3 py-1.5 rounded-lg transition whitespace-nowrap">🗣️<span class="hidden sm:inline" data-i18n="mat.aucun"> Sans matériel</span></button>
+          <button data-mat="edite" data-i18n-title="mat.edite" title="Jeux édités" class="mat-btn text-xs sm:text-sm px-3 py-1.5 rounded-lg transition whitespace-nowrap">📦<span class="hidden sm:inline" data-i18n="mat.edite"> Édités</span></button>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="relative flex-1 min-w-0">
+            <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-cream/50"></i>
+            <input id="searchInput" type="text" placeholder="Rechercher un jeu…" data-i18n-ph="search.ph"
+              class="w-full bg-black/20 border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-sm placeholder-cream/40 focus:outline-none focus:border-gold/60 focus:ring-2 focus:ring-gold/20" />
+          </div>
+          <button id="favToggle" class="chip inline-flex items-center justify-center gap-2 text-sm px-3 py-2.5 rounded-xl bg-black/20 border border-white/10 hover:border-gold/40 shrink-0" title="Afficher mes favoris" data-i18n-title="fav.title">
+            <span class="text-base leading-none">❤️</span>
+            <span class="hidden sm:inline" data-i18n="fav">Favoris</span>
+            <span id="favCount" class="text-[11px] font-bold bg-white/15 rounded-full px-1.5 py-0.5 leading-none">0</span>
+          </button>
+          <button id="toggleFilters" class="chip inline-flex items-center justify-center gap-2 text-sm px-3 py-2.5 rounded-xl bg-black/20 border border-white/10 hover:border-gold/40 shrink-0">
+            <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+            <span class="hidden sm:inline" data-i18n="filters">Filtres</span>
+            <span id="filterCount" class="hidden text-[11px] font-bold bg-gold text-felt-deep rounded-full px-1.5 py-0.5 leading-none">0</span>
+            <i data-lucide="chevron-down" id="filterChevron" class="w-4 h-4 transition-transform"></i>
+          </button>
+        </div>
+      </div>
+      <div id="advancedFilters" class="hidden mt-4 pt-4 border-t border-white/10">
+        <div id="filterGroups" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+        <div class="flex justify-end mt-3">
+          <button id="resetBtn" class="chip hidden inline-flex items-center gap-1.5 text-sm text-cream/70 hover:text-cream px-3 py-1.5 rounded-lg hover:bg-white/5">
+            <i data-lucide="rotate-ccw" class="w-4 h-4"></i> <span data-i18n="reset.all">Tout réinitialiser</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ RESULTS INFO ============ -->
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 pt-6 flex items-center justify-between">
+    <p id="resultsCount" class="text-sm text-cream/70"></p>
+    <button id="resetBtnMobile" class="sm:hidden chip inline-flex items-center gap-1.5 text-sm text-cream/70 px-3 py-1.5 rounded-lg bg-white/5">
+      <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> <span data-i18n="reset.short">Reset</span>
+    </button>
+  </div>
+
+  <!-- ============ ALCOOL NOTICE ============ -->
+  <div id="alcoolNotice" class="hidden max-w-6xl mx-auto px-4 sm:px-6 pt-4 animate-fade-up">
+    <div class="flex items-start gap-3 bg-amber-500/12 border border-amber-400/40 rounded-2xl px-4 py-3 text-sm text-amber-100">
+      <i data-lucide="alert-triangle" class="w-5 h-5 mt-0.5 shrink-0 text-amber-300"></i>
+      <p data-i18n-html="alcool.notice"><strong>Catégorie Apéro — réservée aux +18 ans.</strong> Ces jeux se dégustent avec modération. L'abus d'alcool est dangereux pour la santé ; ne forcez jamais personne à boire — ils fonctionnent tout aussi bien avec des softs 🥤.</p>
+    </div>
+  </div>
+
+  <!-- ============ GRID ============ -->
+  <main id="grid" class="max-w-6xl mx-auto px-4 sm:px-6 py-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"></main>
+
+  <!-- ============ EMPTY STATE ============ -->
+  <div id="emptyState" class="hidden max-w-md mx-auto text-center py-16 px-6">
+    <div class="text-6xl mb-4">🃏</div>
+    <h3 class="font-display text-2xl font-bold" data-i18n="empty.title">Aucun jeu ne correspond…</h3>
+    <p class="text-cream/70 mt-2" data-i18n="empty.sub">Essaie d'assouplir tes filtres — ou laisse le hasard décider.</p>
+    <button onclick="document.getElementById('randomBtn').click()" class="chip mt-5 inline-flex items-center gap-2 bg-gold text-felt-deep font-semibold px-4 py-2 rounded-full">
+      <i data-lucide="dices" class="w-4 h-4"></i> <span data-i18n="empty.btn">Tirer un jeu au hasard</span>
+    </button>
+  </div>
+
+  <!-- ============ AD — BANNIÈRE BAS DE PAGE (leaderboard) ============ -->
+  <!-- Colle ici ton <ins class="adsbygoogle"> (AdSense) ou ton tag Ezoic à la place du placeholder -->
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 pt-8">
+    <div class="ad-slot" data-ad="bas-de-page-728x90"><span data-i18n="ad.leader">Emplacement publicitaire · 728 × 90</span></div>
+  </div>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="max-w-6xl mx-auto px-4 sm:px-6 py-12 mt-4 border-t border-white/10 text-center text-cream/50 text-sm">
+    <p class="font-display text-cream/70 text-base mb-1">Ludorules 🃏🎲</p>
+    <p data-i18n="footer.line">Fait avec ♥ pour les amoureux du jeu. Prends un paquet ou des dés, la partie peut commencer.</p>
+    <nav class="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-cream/60">
+      <a href="/mentions-legales.html" id="footerLegal" class="hover:text-gold transition" data-i18n="foot.legal">Mentions légales</a>
+      <span class="opacity-40">·</span>
+      <a href="/confidentialite.html" id="footerPrivacy" class="hover:text-gold transition" data-i18n="foot.privacy">Confidentialité</a>
+      <span class="opacity-40">·</span>
+      <button id="footerCookies" type="button" class="hover:text-gold transition" data-i18n="foot.cookies">Cookies</button>
+    </nav>
+  </footer>
+
+  <!-- ============ BANDEAU COOKIES (consentement CNIL) ============ -->
+  <div id="cookieBanner" class="hidden fixed bottom-3 inset-x-3 sm:inset-x-auto sm:right-4 sm:left-4 md:left-auto md:max-w-md z-50 glass rounded-2xl p-4 shadow-2xl border border-white/15">
+    <p id="cookieText" class="text-sm text-cream/85 leading-snug" data-i18n="cb.text">Nous utilisons des cookies pour mesurer l'audience et afficher des publicités. Tu peux accepter ou refuser.</p>
+    <div class="flex items-center gap-2 mt-3">
+      <button id="cookieAccept" class="chip flex-1 bg-gold text-felt-deep font-semibold text-sm px-3 py-2 rounded-lg hover:brightness-105" data-i18n="cb.accept">Accepter</button>
+      <button id="cookieRefuse" class="chip flex-1 bg-white/10 border border-white/15 text-cream font-semibold text-sm px-3 py-2 rounded-lg hover:bg-white/15" data-i18n="cb.refuse">Refuser</button>
+      <a id="cookieLearn" href="/confidentialite.html" class="text-xs text-cream/50 hover:text-cream underline px-1" data-i18n="cb.learn">En savoir plus</a>
+    </div>
+  </div>
+
+  <!-- ============ MODAL ============ -->
+  <div id="modal" class="hidden fixed inset-0 z-50 items-center justify-center p-4">
+    <div id="modalBackdrop" class="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
+    <div id="modalCard" class="relative glass rounded-3xl w-full max-w-2xl max-h-[88vh] overflow-hidden animate-pop shadow-2xl border border-white/15">
+      <div id="modalContent" class="overflow-y-auto max-h-[88vh] modal-scroll"></div>
+    </div>
+    <button id="modalPrev" aria-label="Précédent" class="modal-nav hidden lg:flex absolute left-3 xl:left-8 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-black/50 hover:bg-black/70 text-cream items-center justify-center transition-colors shadow-xl">
+      <i data-lucide="chevron-left" class="w-6 h-6"></i>
+    </button>
+    <button id="modalNext" aria-label="Suivant" class="modal-nav hidden lg:flex absolute right-3 xl:right-8 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-black/50 hover:bg-black/70 text-cream items-center justify-center transition-colors shadow-xl">
+      <i data-lucide="chevron-right" class="w-6 h-6"></i>
+    </button>
+  </div>
+
+  <!-- ============ MODAL : PROPOSER UN JEU ============ -->
+  <div id="proposeModal" class="hidden fixed inset-0 z-50 items-center justify-center p-4">
+    <div id="proposeBackdrop" class="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
+    <div class="relative glass rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-hidden animate-pop shadow-2xl border border-white/15">
+      <div class="overflow-y-auto max-h-[90vh] modal-scroll">
+        <div class="relative bg-gradient-to-br from-felt-light to-felt-deep p-6 sm:p-8">
+          <button id="proposeClose" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/30 hover:bg-black/50 flex items-center justify-center transition-colors">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+          <div class="text-5xl mb-3">✍️</div>
+          <h2 class="font-display font-extrabold text-2xl sm:text-3xl" data-i18n="propose.title">Proposer un jeu</h2>
+          <p class="text-cream/85 mt-1 text-sm" data-i18n="propose.intro">Partage un jeu de cartes ou de dés. Après validation par notre équipe, il rejoindra le catalogue.</p>
+        </div>
+
+        <form id="proposeForm" class="p-6 sm:p-8 space-y-5">
+          <div id="proposeError" class="hidden text-sm bg-heart/20 border border-heart/40 text-cream rounded-xl px-4 py-3"></div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+            <div class="sm:col-span-3">
+              <label class="block text-xs font-semibold uppercase tracking-wide text-cream/60 mb-1.5" data-i18n="f.title">Nom du jeu *</label>
+              <input name="title" type="text" required maxlength="80" placeholder="Ex : La Coinche" data-i18n-ph="f.title.ph"
+                class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2.5 text-sm placeholder-cream/40 focus:outline-none focus:border-gold/60 focus:ring-2 focus:ring-gold/20" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold uppercase tracking-wide text-cream/60 mb-1.5" data-i18n="f.emoji">Emoji</label>
+              <input name="emoji" type="text" maxlength="4" placeholder="🃏"
+                class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-center placeholder-cream/40 focus:outline-none focus:border-gold/60 focus:ring-2 focus:ring-gold/20" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wide text-cream/60 mb-1.5" data-i18n="f.tagline">Accroche courte *</label>
+            <input name="tagline" type="text" required maxlength="120" placeholder="Une phrase qui donne envie d'y jouer." data-i18n-ph="f.tagline.ph"
+              class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2.5 text-sm placeholder-cream/40 focus:outline-none focus:border-gold/60 focus:ring-2 focus:ring-gold/20" />
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+            <div>
+              <label class="block text-xs font-semibold uppercase tracking-wide text-cream/60 mb-1.5" data-i18n="f.mood">Ambiance</label>
+              <select name="mood" class="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-gold/60">
+                <option value="strategie" data-i18n="mood.strategie">🧠 Stratégie</option>
+                <option value="ambiance" selected data-i18n="mood.ambiance">🎉 Fun</option>
+                <option value="enfants" data-i18n="mood.enfants">🧸 Enfants</option>
+                <option value="soiree" data-i18n="mood.soiree">🌙 Soirée</option>
+                <option value="alcool" data-i18n="mood.alcool">🍻 Apéro 18+</option>
+                <option value="solitaire" data-i18n="mood.solitaire">🧘 Solo</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold uppercase tracking-wide text-cream/60 mb-1.5" data-i18n="f.time">Durée</label>
+              <select name="time" class="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-gold/60">
+                <option value="court" selected data-i18n="time.court">&lt; 15 min</option>
+                <option value="moyen" data-i18n="time.moyen">15-30 min</option>
+                <option value="long" data-i18n="time.long">45 min +</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold uppercase tracking-wide text-cream/60 mb-1.5" data-i18n="f.players">Joueurs</label>
+              <select name="players" class="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-gold/60">
+                <option value="1" data-i18n="players.solo">Solo</option>
+                <option value="2" data-i18n="players.2">2 joueurs</option>
+                <option value="3-4" selected data-i18n="players.34">3-4 joueurs</option>
+                <option value="5+" data-i18n="players.5">5 et +</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold uppercase tracking-wide text-cream/60 mb-1.5" data-i18n="f.type">Matériel</label>
+              <select name="type" class="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-gold/60">
+                <option value="cartes" selected data-i18n="ptype.cartes">🃏 Cartes</option>
+                <option value="des" data-i18n="ptype.des">🎲 Dés</option>
+                <option value="autre" data-i18n="ptype.autre">🎒 Accessoires</option>
+                <option value="aucun" data-i18n="ptype.aucun">🗣️ Sans matériel</option>
+                <option value="edite" data-i18n="ptype.edite">📦 Édité</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wide text-cream/60 mb-1.5" data-i18n="f.playersLabel">Détail du nombre de joueurs</label>
+            <input name="playersLabel" type="text" maxlength="60" placeholder="Ex : 3 à 6 joueurs" data-i18n-ph="f.playersLabel.ph"
+              class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2.5 text-sm placeholder-cream/40 focus:outline-none focus:border-gold/60 focus:ring-2 focus:ring-gold/20" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wide text-cream/60 mb-1.5" data-i18n="f.material">Matériel nécessaire *</label>
+            <textarea name="material" required rows="2" maxlength="400" placeholder="Ex : Un jeu de 52 cartes, de quoi noter les scores." data-i18n-ph="f.material.ph"
+              class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2.5 text-sm placeholder-cream/40 focus:outline-none focus:border-gold/60 focus:ring-2 focus:ring-gold/20"></textarea>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wide text-cream/60 mb-1.5" data-i18n="f.objective">Objectif du jeu *</label>
+            <textarea name="objective" required rows="2" maxlength="400" placeholder="Que doit-on faire pour gagner ?" data-i18n-ph="f.objective.ph"
+              class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2.5 text-sm placeholder-cream/40 focus:outline-none focus:border-gold/60 focus:ring-2 focus:ring-gold/20"></textarea>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wide text-cream/60 mb-1.5" data-i18n="f.rules">Règles — une par ligne *</label>
+            <textarea name="rules" required rows="5" maxlength="2500" placeholder="Distribuez 5 cartes par joueur.&#10;À tour de rôle, chaque joueur…&#10;La partie se termine quand…" data-i18n-ph="f.rules.ph"
+              class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2.5 text-sm placeholder-cream/40 focus:outline-none focus:border-gold/60 focus:ring-2 focus:ring-gold/20"></textarea>
+            <p class="text-[11px] text-cream/45 mt-1" data-i18n="f.rules.hint">Chaque ligne deviendra une étape numérotée.</p>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wide text-cream/60 mb-1.5" data-i18n="f.tips">Astuces & stratégie</label>
+            <textarea name="tips" rows="2" maxlength="600" placeholder="Un conseil pour bien jouer (facultatif)." data-i18n-ph="f.tips.ph"
+              class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2.5 text-sm placeholder-cream/40 focus:outline-none focus:border-gold/60 focus:ring-2 focus:ring-gold/20"></textarea>
+          </div>
+
+          <label class="flex items-center gap-2.5 text-sm text-cream/80 cursor-pointer">
+            <input name="alcool" type="checkbox" class="w-4 h-4 accent-gold" />
+            <span data-i18n="f.alcool">Ce jeu implique de l'alcool (réservé aux +18 ans)</span>
+          </label>
+
+          <div class="border-t border-white/10 pt-5 space-y-3">
+            <p class="text-xs font-semibold uppercase tracking-wide text-cream/60" data-i18n="f.contact">Vos coordonnées (facultatif)</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <input name="submitter_name" type="text" maxlength="80" placeholder="Votre nom" data-i18n-ph="f.name.ph"
+                class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2.5 text-sm placeholder-cream/40 focus:outline-none focus:border-gold/60 focus:ring-2 focus:ring-gold/20" />
+              <input name="submitter_email" type="email" maxlength="120" placeholder="Votre email" data-i18n-ph="f.email.ph"
+                class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2.5 text-sm placeholder-cream/40 focus:outline-none focus:border-gold/60 focus:ring-2 focus:ring-gold/20" />
+            </div>
+            <textarea name="submitter_note" rows="2" maxlength="500" placeholder="Un mot pour l'équipe (facultatif)" data-i18n-ph="f.note.ph"
+              class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2.5 text-sm placeholder-cream/40 focus:outline-none focus:border-gold/60 focus:ring-2 focus:ring-gold/20"></textarea>
+          </div>
+
+          <button type="submit" id="proposeSubmit" class="chip w-full inline-flex items-center justify-center gap-2 bg-gold text-felt-deep font-semibold px-4 py-3 rounded-xl hover:brightness-105 disabled:opacity-60 disabled:cursor-not-allowed">
+            <i data-lucide="send" class="w-4 h-4"></i> <span data-i18n="f.submit">Envoyer ma proposition</span>
+          </button>
+          <p class="text-[11px] text-cream/45 text-center" data-i18n="f.legal">* champs obligatoires · Votre proposition sera relue avant publication.</p>
+        </form>
+
+        <div id="proposeSuccess" class="hidden p-8 text-center">
+          <div class="text-6xl mb-4">🎉</div>
+          <h2 class="font-display font-extrabold text-2xl mb-2" data-i18n="success.title">Merci !</h2>
+          <p class="text-cream/80 text-sm max-w-sm mx-auto" data-i18n="success.body">Votre proposition a bien été envoyée. Notre équipe va la relire, et le jeu apparaîtra dans le catalogue une fois validé.</p>
+          <button id="proposeDone" class="chip mt-6 inline-flex items-center gap-2 bg-gold text-felt-deep font-semibold px-5 py-2.5 rounded-xl hover:brightness-105" data-i18n="success.close">
+            Fermer
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  /* ==========================================================
+     BASE DE DONNÉES DES JEUX
+     ========================================================== */
+  /* Les jeux sont chargés dynamiquement depuis l’API (voir loadGames()). */
+  let GAMES = [];
+
+  /* Réglages globaux (affiliation, publicité, Google Tag Manager) — configurables
+     depuis /admin, chargés dynamiquement depuis l'API (voir loadSettings()). */
+  let SETTINGS = { affiliateEnabled: true, amazonTag: '', adsEnabled: false, adsenseClient: '', gtmEnabled: false, gtmId: '' };
+
+  /* ==========================================================
+     INTERNATIONALISATION (FR / EN)
+     ========================================================== */
+  const I18N = {
+    fr: {
+      'meta.title': 'Ludorules — Jeux de cartes & de dés',
+      'meta.desc': "Trouve le jeu de cartes ou de dés parfait selon le matériel, le nombre de joueurs, l'ambiance et le temps disponible. Règles complètes incluses.",
+      'header.tagline': 'Le catalogue ultime des jeux de cartes & de dés',
+      'btn.propose': 'Proposer un jeu', 'btn.propose.short': 'Proposer', 'btn.random': 'Inspire-moi !',
+      'hero.h1': 'Trouve ton jeu <span class="text-gold">en 10&nbsp;secondes</span>.',
+      'hero.sub': "Cartes ou dés, à 2 ou à 10, tranquille ou déchaîné&nbsp;— dis-nous ton envie, on s'occupe des règles.",
+      'badge.count': '{n} jeux prêts à jouer',
+      'mat.all': ' Tous', 'mat.cartes': ' Cartes', 'mat.des': ' Dés', 'mat.gobelets': ' Gobelets', 'mat.autre': ' Accessoires', 'mat.aucun': ' Sans matériel', 'mat.edite': ' Édités',
+      'ptype.cartes': '🃏 Cartes', 'ptype.des': '🎲 Dés', 'ptype.autre': '🎒 Accessoires', 'ptype.aucun': '🗣️ Sans matériel', 'ptype.edite': '📦 Édité',
+      'f.type': 'Matériel',
+      'search.ph': 'Rechercher un jeu…',
+      'fav': 'Favoris', 'fav.title': 'Afficher mes favoris',
+      'filters': 'Filtres', 'reset.all': 'Tout réinitialiser', 'reset.short': 'Reset',
+      'alcool.notice': "<strong>Catégorie Apéro — réservée aux +18 ans.</strong> Ces jeux se dégustent avec modération. L'abus d'alcool est dangereux pour la santé ; ne forcez jamais personne à boire — ils fonctionnent tout aussi bien avec des softs 🥤.",
+      'empty.title': 'Aucun jeu ne correspond…', 'empty.sub': "Essaie d'assouplir tes filtres — ou laisse le hasard décider.", 'empty.btn': 'Tirer un jeu au hasard',
+      'footer.line': 'Fait avec ♥ pour les amoureux du jeu. Prends un paquet ou des dés, la partie peut commencer.',
+      'results.count': '{n} jeu{x} trouvé{s}',
+      'filter.players': 'Nombre de joueurs', 'filter.mood': 'Ambiance', 'filter.time': 'Durée',
+      'mood.strategie': '🧠 Stratégie', 'mood.ambiance': '🎉 Fun', 'mood.enfants': '🧸 Enfants', 'mood.soiree': '🌙 Soirée', 'mood.alcool': '🍻 Apéro 18+', 'mood.solitaire': '🧘 Solo',
+      'moodlbl.strategie': 'Stratégie', 'moodlbl.ambiance': 'Fun', 'moodlbl.enfants': 'Enfants', 'moodlbl.soiree': 'Soirée', 'moodlbl.alcool': 'Apéro', 'moodlbl.solitaire': 'Solo',
+      'time.court': '< 15 min', 'time.moyen': '15-30 min', 'time.long': '45 min +',
+      'players.solo': 'Solo', 'players.2': '2 joueurs', 'players.34': '3-4 joueurs', 'players.5': '5 et +',
+      'fplayers.1': 'Solo', 'fplayers.2': '2 joueurs', 'fplayers.3-4': '3-4', 'fplayers.5+': '5 et +',
+      'deck.32': '32 cartes', 'deck.52': '52 cartes', 'deck.tarot': 'Tarot', 'deck.autre': 'Autre / spécial',
+      'matlbl.aucun': 'Sans matériel', 'matlbl.gobelets': 'Gobelets', 'matlbl.autre': 'Accessoires', 'matlbl.cartes': 'Cartes', 'matlbl.edite': 'Jeu édité',
+      'modal.material': 'Matériel nécessaire', 'modal.objective': 'Objectif du jeu', 'modal.rules': 'Règles pas à pas', 'modal.tips': 'Astuces & stratégie',
+      'modal.another': 'Un autre jeu au hasard', 'modal.like': "J'aime", 'modal.liked': 'Aimé', 'modal.prev': 'Précédent', 'modal.next': 'Suivant',
+      'modal.alcool': "<strong>À consommer avec modération · Réservé aux +18 ans.</strong> L'abus d'alcool est dangereux pour la santé. Ne forcez jamais quiconque à boire — tous ces jeux se jouent aussi très bien sans alcool.",
+      'modal.buy': 'Où se le procurer', 'buy.material': 'Matériel', 'buy.disclaimer': "Liens affiliés : sans surcoût pour vous, une petite commission peut nous revenir si vous achetez via ces liens.",
+      'ad.leader': 'Emplacement publicitaire · 728 × 90', 'ad.end': 'Emplacement publicitaire',
+      'foot.legal': 'Mentions légales', 'foot.privacy': 'Confidentialité', 'foot.cookies': 'Cookies',
+      'cb.text': "Nous utilisons des cookies pour mesurer l'audience et afficher des publicités. Tu peux accepter ou refuser.",
+      'cb.accept': 'Accepter', 'cb.refuse': 'Refuser', 'cb.learn': 'En savoir plus',
+      'propose.title': 'Proposer un jeu', 'propose.intro': 'Partage un jeu de cartes ou de dés. Après validation par notre équipe, il rejoindra le catalogue.',
+      'f.title': 'Nom du jeu *', 'f.title.ph': 'Ex : La Coinche', 'f.emoji': 'Emoji',
+      'f.tagline': 'Accroche courte *', 'f.tagline.ph': "Une phrase qui donne envie d'y jouer.",
+      'f.mood': 'Ambiance', 'f.time': 'Durée', 'f.players': 'Joueurs',
+      'f.playersLabel': 'Détail du nombre de joueurs', 'f.playersLabel.ph': 'Ex : 3 à 6 joueurs',
+      'f.material': 'Matériel nécessaire *', 'f.material.ph': 'Ex : Un jeu de 52 cartes, de quoi noter les scores.',
+      'f.objective': 'Objectif du jeu *', 'f.objective.ph': 'Que doit-on faire pour gagner ?',
+      'f.rules': 'Règles — une par ligne *', 'f.rules.ph': 'Distribuez 5 cartes par joueur.\nÀ tour de rôle, chaque joueur…\nLa partie se termine quand…', 'f.rules.hint': 'Chaque ligne deviendra une étape numérotée.',
+      'f.tips': 'Astuces & stratégie', 'f.tips.ph': 'Un conseil pour bien jouer (facultatif).',
+      'f.alcool': "Ce jeu implique de l'alcool (réservé aux +18 ans)",
+      'f.contact': 'Vos coordonnées (facultatif)', 'f.name.ph': 'Votre nom', 'f.email.ph': 'Votre email', 'f.note.ph': "Un mot pour l'équipe (facultatif)",
+      'f.submit': 'Envoyer ma proposition', 'f.legal': '* champs obligatoires · Votre proposition sera relue avant publication.',
+      'success.title': 'Merci !', 'success.body': 'Votre proposition a bien été envoyée. Notre équipe va la relire, et le jeu apparaîtra dans le catalogue une fois validé.', 'success.close': 'Fermer',
+      'err.generic': 'Une erreur est survenue.', 'err.load': 'Impossible de charger les jeux. Le serveur est-il démarré ?',
+    },
+    en: {
+      'meta.title': 'Ludorules — Card & dice games',
+      'meta.desc': 'Find the perfect card or dice game by equipment, number of players, mood and time available. Full rules included.',
+      'header.tagline': 'The ultimate card & dice game catalog',
+      'btn.propose': 'Suggest a game', 'btn.propose.short': 'Suggest', 'btn.random': 'Surprise me!',
+      'hero.h1': 'Find your game <span class="text-gold">in 10&nbsp;seconds</span>.',
+      'hero.sub': "Cards or dice, 2 players or 10, chill or wild&nbsp;— tell us the vibe, we'll handle the rules.",
+      'badge.count': '{n} games ready to play',
+      'mat.all': ' All', 'mat.cartes': ' Cards', 'mat.des': ' Dice', 'mat.gobelets': ' Cups', 'mat.autre': ' Props', 'mat.aucun': ' No gear', 'mat.edite': ' Boxed games',
+      'ptype.cartes': '🃏 Cards', 'ptype.des': '🎲 Dice', 'ptype.autre': '🎒 Props', 'ptype.aucun': '🗣️ No gear', 'ptype.edite': '📦 Boxed game',
+      'f.type': 'Equipment',
+      'search.ph': 'Search a game…',
+      'fav': 'Favorites', 'fav.title': 'Show my favorites',
+      'filters': 'Filters', 'reset.all': 'Reset all', 'reset.short': 'Reset',
+      'alcool.notice': '<strong>Apéro category — 18+ only.</strong> Enjoy these games responsibly. Alcohol abuse is dangerous for your health; never pressure anyone to drink — they work just as well with soft drinks 🥤.',
+      'empty.title': 'No game matches…', 'empty.sub': 'Try loosening your filters — or let chance decide.', 'empty.btn': 'Pick a random game',
+      'footer.line': 'Made with ♥ for game lovers. Grab a deck or some dice — game on.',
+      'results.count': '{n} game{s} found',
+      'filter.players': 'Number of players', 'filter.mood': 'Mood', 'filter.time': 'Duration',
+      'mood.strategie': '🧠 Strategy', 'mood.ambiance': '🎉 Fun', 'mood.enfants': '🧸 Kids', 'mood.soiree': '🌙 Party', 'mood.alcool': '🍻 Drinks 18+', 'mood.solitaire': '🧘 Solo',
+      'moodlbl.strategie': 'Strategy', 'moodlbl.ambiance': 'Fun', 'moodlbl.enfants': 'Kids', 'moodlbl.soiree': 'Party', 'moodlbl.alcool': 'Drinks', 'moodlbl.solitaire': 'Solo',
+      'time.court': '< 15 min', 'time.moyen': '15-30 min', 'time.long': '45 min +',
+      'players.solo': 'Solo', 'players.2': '2 players', 'players.34': '3-4 players', 'players.5': '5 and +',
+      'fplayers.1': 'Solo', 'fplayers.2': '2 players', 'fplayers.3-4': '3-4', 'fplayers.5+': '5 and +',
+      'deck.32': '32-card deck', 'deck.52': '52-card deck', 'deck.tarot': 'Tarot', 'deck.autre': 'Other / special',
+      'matlbl.aucun': 'No equipment', 'matlbl.gobelets': 'Cups', 'matlbl.autre': 'Props', 'matlbl.cartes': 'Cards', 'matlbl.edite': 'Boxed game',
+      'modal.material': 'What you need', 'modal.objective': 'Goal of the game', 'modal.rules': 'Step-by-step rules', 'modal.tips': 'Tips & strategy',
+      'modal.another': 'Another random game', 'modal.like': 'Like', 'modal.liked': 'Liked', 'modal.prev': 'Previous', 'modal.next': 'Next',
+      'modal.alcool': '<strong>Drink responsibly · 18+ only.</strong> Alcohol abuse is dangerous for your health. Never pressure anyone to drink — all these games are just as fun without alcohol.',
+      'modal.buy': 'Where to get it', 'buy.material': 'Material', 'buy.disclaimer': 'Affiliate links: no extra cost to you, we may earn a small commission if you buy through these links.',
+      'ad.leader': 'Advertisement · 728 × 90', 'ad.end': 'Advertisement',
+      'foot.legal': 'Legal notice', 'foot.privacy': 'Privacy', 'foot.cookies': 'Cookies',
+      'cb.text': 'We use cookies to measure audience and show ads. You can accept or decline.',
+      'cb.accept': 'Accept', 'cb.refuse': 'Decline', 'cb.learn': 'Learn more',
+      'propose.title': 'Suggest a game', 'propose.intro': 'Share a card or dice game. Once approved by our team, it will join the catalog.',
+      'f.title': 'Game name *', 'f.title.ph': 'e.g. Coinche', 'f.emoji': 'Emoji',
+      'f.tagline': 'Short tagline *', 'f.tagline.ph': 'One line that makes people want to play.',
+      'f.mood': 'Mood', 'f.time': 'Duration', 'f.players': 'Players',
+      'f.playersLabel': 'Player count detail', 'f.playersLabel.ph': 'e.g. 3 to 6 players',
+      'f.material': 'What you need *', 'f.material.ph': 'e.g. A standard 52-card deck, something to keep score.',
+      'f.objective': 'Goal of the game *', 'f.objective.ph': 'What must you do to win?',
+      'f.rules': 'Rules — one per line *', 'f.rules.ph': 'Deal 5 cards to each player.\nOn their turn, each player…\nThe game ends when…', 'f.rules.hint': 'Each line becomes a numbered step.',
+      'f.tips': 'Tips & strategy', 'f.tips.ph': 'A tip to play well (optional).',
+      'f.alcool': 'This game involves alcohol (18+ only)',
+      'f.contact': 'Your details (optional)', 'f.name.ph': 'Your name', 'f.email.ph': 'Your email', 'f.note.ph': 'A note for the team (optional)',
+      'f.submit': 'Send my suggestion', 'f.legal': '* required fields · Your suggestion will be reviewed before publication.',
+      'success.title': 'Thank you!', 'success.body': 'Your suggestion has been sent. Our team will review it, and the game will appear in the catalog once approved.', 'success.close': 'Close',
+      'err.generic': 'Something went wrong.', 'err.load': 'Could not load the games. Is the server running?',
+    },
+    es: {
+      'meta.title': 'Ludorules — Juegos de cartas y dados',
+      'meta.desc': 'Encuentra el juego de cartas o dados perfecto según el material, el número de jugadores, el ambiente y el tiempo disponible. Reglas completas incluidas.',
+      'header.tagline': 'El catálogo definitivo de juegos de cartas y dados',
+      'btn.propose': 'Proponer un juego', 'btn.propose.short': 'Proponer', 'btn.random': '¡Sorpréndeme!',
+      'hero.h1': 'Encuentra tu juego <span class="text-gold">en 10&nbsp;segundos</span>.',
+      'hero.sub': "Cartas o dados, para 2 o para 10, tranquilo o desatado&nbsp;— dinos qué te apetece, nosotros nos ocupamos de las reglas.",
+      'badge.count': '{n} juegos listos para jugar',
+      'mat.all': ' Todos', 'mat.cartes': ' Cartas', 'mat.des': ' Dados', 'mat.gobelets': ' Vasos', 'mat.autre': ' Accesorios', 'mat.aucun': ' Sin material', 'mat.edite': ' De caja',
+      'ptype.cartes': '🃏 Cartas', 'ptype.des': '🎲 Dados', 'ptype.autre': '🎒 Accesorios', 'ptype.aucun': '🗣️ Sin material', 'ptype.edite': '📦 De caja',
+      'f.type': 'Material',
+      'search.ph': 'Buscar un juego…',
+      'fav': 'Favoritos', 'fav.title': 'Mostrar mis favoritos',
+      'filters': 'Filtros', 'reset.all': 'Reiniciar todo', 'reset.short': 'Reiniciar',
+      'alcool.notice': "<strong>Categoría Aperitivo — solo mayores de 18 años.</strong> Disfruta estos juegos con moderación. El abuso del alcohol es peligroso para la salud; nunca obligues a nadie a beber — funcionan igual de bien con refrescos 🥤.",
+      'empty.title': 'Ningún juego coincide…', 'empty.sub': 'Prueba a relajar tus filtros — o deja que el azar decida.', 'empty.btn': 'Elegir un juego al azar',
+      'footer.line': 'Hecho con ♥ para los amantes del juego. Coge una baraja o unos dados, la partida puede empezar.',
+      'results.count': '{n} juego{x} encontrado{s}',
+      'filter.players': 'Número de jugadores', 'filter.mood': 'Ambiente', 'filter.time': 'Duración',
+      'mood.strategie': '🧠 Estrategia', 'mood.ambiance': '🎉 Diversión', 'mood.enfants': '🧸 Niños', 'mood.soiree': '🌙 Fiesta', 'mood.alcool': '🍻 Aperitivo 18+', 'mood.solitaire': '🧘 Solo',
+      'moodlbl.strategie': 'Estrategia', 'moodlbl.ambiance': 'Diversión', 'moodlbl.enfants': 'Niños', 'moodlbl.soiree': 'Fiesta', 'moodlbl.alcool': 'Aperitivo', 'moodlbl.solitaire': 'Solo',
+      'time.court': '< 15 min', 'time.moyen': '15-30 min', 'time.long': '45 min +',
+      'players.solo': 'Solo', 'players.2': '2 jugadores', 'players.34': '3-4 jugadores', 'players.5': '5 y más',
+      'fplayers.1': 'Solo', 'fplayers.2': '2 jugadores', 'fplayers.3-4': '3-4', 'fplayers.5+': '5 y más',
+      'deck.32': '32 cartas', 'deck.52': '52 cartas', 'deck.tarot': 'Tarot', 'deck.autre': 'Otro / especial',
+      'matlbl.aucun': 'Sin material', 'matlbl.gobelets': 'Vasos', 'matlbl.autre': 'Accesorios', 'matlbl.cartes': 'Cartas', 'matlbl.edite': 'Juego de caja',
+      'modal.material': 'Material necesario', 'modal.objective': 'Objetivo del juego', 'modal.rules': 'Reglas paso a paso', 'modal.tips': 'Consejos y estrategia',
+      'modal.another': 'Otro juego al azar', 'modal.like': 'Me gusta', 'modal.liked': 'Me gusta ✓', 'modal.prev': 'Anterior', 'modal.next': 'Siguiente',
+      'modal.alcool': "<strong>Consumir con moderación · Solo mayores de 18 años.</strong> El abuso del alcohol es peligroso para la salud. Nunca obligues a nadie a beber — todos estos juegos funcionan igual de bien sin alcohol.",
+      'modal.buy': 'Dónde conseguirlo', 'buy.material': 'Material', 'buy.disclaimer': 'Enlaces de afiliados: sin coste adicional para ti, podemos recibir una pequeña comisión si compras a través de estos enlaces.',
+      'ad.leader': 'Espacio publicitario · 728 × 90', 'ad.end': 'Espacio publicitario',
+      'foot.legal': 'Aviso legal', 'foot.privacy': 'Privacidad', 'foot.cookies': 'Cookies',
+      'cb.text': 'Usamos cookies para medir la audiencia y mostrar anuncios. Puedes aceptar o rechazar.',
+      'cb.accept': 'Aceptar', 'cb.refuse': 'Rechazar', 'cb.learn': 'Saber más',
+      'propose.title': 'Proponer un juego', 'propose.intro': 'Comparte un juego de cartas o dados. Una vez validado por nuestro equipo, se unirá al catálogo.',
+      'f.title': 'Nombre del juego *', 'f.title.ph': 'Ej: La Coinche', 'f.emoji': 'Emoji',
+      'f.tagline': 'Frase corta *', 'f.tagline.ph': 'Una frase que dé ganas de jugar.',
+      'f.mood': 'Ambiente', 'f.time': 'Duración', 'f.players': 'Jugadores',
+      'f.playersLabel': 'Detalle del número de jugadores', 'f.playersLabel.ph': 'Ej: de 3 a 6 jugadores',
+      'f.material': 'Material necesario *', 'f.material.ph': 'Ej: Una baraja de 52 cartas, algo para anotar los puntos.',
+      'f.objective': 'Objetivo del juego *', 'f.objective.ph': '¿Qué hay que hacer para ganar?',
+      'f.rules': 'Reglas — una por línea *', 'f.rules.ph': 'Reparte 5 cartas a cada jugador.\nPor turnos, cada jugador…\nLa partida termina cuando…', 'f.rules.hint': 'Cada línea se convertirá en un paso numerado.',
+      'f.tips': 'Consejos y estrategia', 'f.tips.ph': 'Un consejo para jugar bien (opcional).',
+      'f.alcool': 'Este juego implica alcohol (solo mayores de 18 años)',
+      'f.contact': 'Tus datos (opcional)', 'f.name.ph': 'Tu nombre', 'f.email.ph': 'Tu email', 'f.note.ph': 'Un mensaje para el equipo (opcional)',
+      'f.submit': 'Enviar mi propuesta', 'f.legal': '* campos obligatorios · Tu propuesta será revisada antes de su publicación.',
+      'success.title': '¡Gracias!', 'success.body': 'Tu propuesta ha sido enviada. Nuestro equipo la revisará y el juego aparecerá en el catálogo una vez aprobado.', 'success.close': 'Cerrar',
+      'err.generic': 'Ha ocurrido un error.', 'err.load': '¿No se pueden cargar los juegos? Comprueba que el servidor esté iniciado.',
+    },
+  };
+
+  const LANGS = ['fr', 'en', 'es'];
+  let lang = 'fr';
+  try { const s = localStorage.getItem('ludo_lang'); if (LANGS.includes(s)) lang = s; } catch (e) {}
+  if (lang === 'fr' && !localStorage.getItem('ludo_lang')) {
+    // 1ère visite : on suit la langue du navigateur si elle est supportée
+    try {
+      const nav = (navigator.language || '').toLowerCase();
+      if (nav.startsWith('en')) lang = 'en';
+      else if (nav.startsWith('es')) lang = 'es';
+    } catch (e) {}
+  }
+
+  function t(key, vars) {
+    let s = (I18N[lang] && I18N[lang][key]) != null ? I18N[lang][key] : (I18N.fr[key] != null ? I18N.fr[key] : key);
+    if (vars) for (const k in vars) s = s.replace(new RegExp('\\{' + k + '\\}', 'g'), vars[k]);
+    return s;
+  }
+
+  // Projette un jeu dans la langue courante : superpose game.translations[lang] sur les champs de base (FR = fallback).
+  const TRANSLATABLE = ['title', 'tagline', 'material', 'objective', 'tips', 'playersLabel', 'gear', 'dice', 'rules'];
+  function L(g) {
+    if (lang === 'fr' || !g.translations || !g.translations[lang]) return g;
+    const tr = g.translations[lang];
+    const out = Object.assign({}, g);
+    for (const f of TRANSLATABLE) {
+      if (tr[f] != null && (Array.isArray(tr[f]) ? tr[f].length : String(tr[f]).trim() !== '')) out[f] = tr[f];
+    }
+    return out;
+  }
+
+  // Applique les traductions à tous les éléments statiques marqués data-i18n*.
+  function applyI18n() {
+    document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+    document.querySelectorAll('[data-i18n-html]').forEach(el => { el.innerHTML = t(el.dataset.i18nHtml); });
+    document.querySelectorAll('[data-i18n-ph]').forEach(el => { el.setAttribute('placeholder', t(el.dataset.i18nPh)); });
+    document.querySelectorAll('[data-i18n-title]').forEach(el => { el.setAttribute('title', t(el.dataset.i18nTitle).trim()); });
+    // hero contient du HTML
+    const h1 = document.querySelector('[data-i18n="hero.h1"]'); if (h1) h1.innerHTML = t('hero.h1');
+    document.documentElement.lang = lang;
+    document.title = t('meta.title');
+    const md = document.querySelector('meta[name="description"]'); if (md) md.setAttribute('content', t('meta.desc'));
+    // état visuel du sélecteur de langue
+    document.querySelectorAll('.lang-btn').forEach(b => {
+      const on = b.dataset.lang === lang;
+      b.className = 'lang-btn px-2.5 py-1 rounded-full transition ' + (on ? 'bg-gold text-felt-deep' : 'text-cream/70 hover:text-cream');
+    });
+    // liens légaux localisés (mêmes pages, noms de fichiers adaptés à la langue)
+    const legalMap = {
+      fr: { legal: '/mentions-legales.html', privacy: '/confidentialite.html' },
+      en: { legal: '/en/legal-notice.html', privacy: '/en/privacy.html' },
+      es: { legal: '/es/aviso-legal.html', privacy: '/es/privacidad.html' },
+    };
+    const lm = legalMap[lang] || legalMap.fr;
+    const setHref = (id, href) => { const el = document.getElementById(id); if (el) el.setAttribute('href', href); };
+    setHref('footerLegal', lm.legal);
+    setHref('footerPrivacy', lm.privacy);
+    setHref('cookieLearn', lm.privacy);
+  }
+
+  function setLang(l) {
+    if (!LANGS.includes(l) || l === lang) return;
+    lang = l;
+    try { localStorage.setItem('ludo_lang', l); } catch (e) {}
+    applyI18n();
+    const badge = document.getElementById('gameCountBadge');
+    if (badge && GAMES.length) badge.textContent = t('badge.count', { n: GAMES.length });
+    render();
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  }
+
+  /* ==========================================================
+     CONFIGURATION DES FILTRES
+     ========================================================== */
+  const FILTERS = {
+    players: { icon: 'users', options: [ { value: '1' }, { value: '2' }, { value: '3-4' }, { value: '5+' } ] },
+    mood:    { icon: 'party-popper', options: [ { value: 'strategie' }, { value: 'ambiance' }, { value: 'enfants' }, { value: 'soiree' }, { value: 'alcool' }, { value: 'solitaire' } ] },
+    time:    { icon: 'clock', options: [ { value: 'court' }, { value: 'moyen' }, { value: 'long' } ] },
+  };
+
+  const MOOD_EMOJI = { strategie: '🧠', ambiance: '🎉', enfants: '🧸', soiree: '🌙', alcool: '🍻', solitaire: '🧘' };
+  function timeLabel(v) { return t('time.' + v) || v; }
+  function moodLabel(v) { return t('moodlbl.' + v) || v; }
+  function deckLabel(v) { return I18N[lang]['deck.' + v] || v; }
+
+  // Catégorie d'équipement d'un jeu : 'cartes', 'des', 'gobelets', 'aucun' (sans matériel), 'autre' (accessoires) ou 'edite' (jeu de société en boîte).
+  function matCat(g) {
+    if (g.type === 'des') return 'des';
+    if (g.type === 'edite') return 'edite';
+    if (g.type === 'aucun') return 'aucun';
+    if (g.type === 'autre') {
+      const gear = g.gear || '';
+      if (gear.startsWith('🗣️')) return 'aucun';
+      if (gear.startsWith('🥤')) return 'gobelets';
+      return 'autre';
+    }
+    return 'cartes';
+  }
+
+  // Renvoie l'icône + le libellé de l'équipement principal d'un jeu (g déjà projeté dans la langue via L()).
+  function matInfo(g) {
+    const c = matCat(g);
+    if (c === 'des')      return { icon: 'dices', label: g.dice || t('matlbl.cartes') };
+    if (c === 'edite')    return { icon: 'box', label: t('matlbl.edite') };
+    if (c === 'aucun')    return { icon: 'message-circle', label: g.gear || t('matlbl.aucun') };
+    if (c === 'gobelets') return { icon: 'beer', label: g.gear || t('matlbl.gobelets') };
+    if (c === 'autre')    return { icon: 'party-popper', label: g.gear || t('matlbl.autre') };
+    return { icon: 'layers', label: deckLabel(g.deck) || t('matlbl.cartes') };
+  }
+
+  /* ==========================================================
+     AFFILIATION — bloc d'achat par jeu
+     ========================================================== */
+  const STORE_STYLE = {
+    Amazon:    'bg-[#febd69] text-black',
+    Fnac:      'bg-amber-400 text-black',
+    Philibert: 'bg-[#c8102e] text-white',
+  };
+  // Liens de recherche par magasin. Le tag d'affilié Amazon se configure
+  // depuis l'espace admin (onglet Réglages) → SETTINGS.amazonTag.
+  function storeLinks(query) {
+    const q = encodeURIComponent(query);
+    const amazonUrl = SETTINGS.amazonTag
+      ? `https://www.amazon.fr/s?k=${q}&tag=${encodeURIComponent(SETTINGS.amazonTag)}`
+      : `https://www.amazon.fr/s?k=${q}`;
+    return [
+      { name: 'Amazon',    url: amazonUrl },
+      { name: 'Fnac',      url: `https://www.fnac.com/SearchResult/ResultList.aspx?Search=${q}` },
+      { name: 'Philibert', url: `https://www.philibertnet.com/fr/recherche?controller=search&s=${q}` },
+    ];
+  }
+  // Renvoie les infos d'achat d'un jeu : g.buy explicite, sinon un fallback selon l'équipement.
+  // Renvoie null si le bloc d'achat est désactivé depuis l'admin (SETTINGS.affiliateEnabled).
+  function buyInfo(g) {
+    if (!SETTINGS.affiliateEnabled) return null;
+    if (g.buy) return g.buy;
+    const c = matCat(g);
+    if (c === 'aucun') return null; // rien à acheter
+    if (c === 'des')      return { visual: '🎲', material: g.dice || 'Lot de dés', price: '≈ 6 €',  query: 'lot de dés' };
+    if (c === 'gobelets') return { visual: '🥤', material: 'Gobelets + balles de ping-pong', price: '≈ 10 €', query: 'gobelets beer pong' };
+    if (c === 'edite')    return { visual: '📦', material: g.title || 'Jeu de société', price: '', query: g.title || 'jeu de société' };
+    if (c === 'autre')    return { visual: '🎒', material: (g.gear || 'Accessoires de jeu').replace(/^[^ ]+ /, ''), price: '≈ 8 €', query: 'accessoire jeu soirée' };
+    const deckMap = { '32': 'Jeu de 32 cartes', 'tarot': 'Jeu de tarot (78 cartes)', 'autre': 'Jeu de cartes adapté' };
+    return { visual: '🃏', material: deckMap[g.deck] || 'Jeu de 52 cartes plastifiées', price: '≈ 5 €', query: deckMap[g.deck] || 'jeu 52 cartes plastifiées' };
+  }
+  function buyBlockHTML(g) {
+    const b = buyInfo(g);
+    if (!b) return '';
+    const links = b.links || storeLinks(b.query);
+    const btns = links.map(l => `<a href="${l.url}" target="_blank" rel="nofollow sponsored noopener" class="buy-btn ${STORE_STYLE[l.name] || 'bg-gold text-felt-deep'}"><i data-lucide="shopping-cart" class="w-4 h-4"></i> ${l.name}</a>`).join('');
+    return `
+      <div class="rounded-2xl border border-white/12 bg-black/25 p-4">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="text-4xl leading-none">${b.visual}</div>
+          <div class="min-w-0">
+            <p class="text-[10px] uppercase tracking-wide text-cream/50">${t('buy.material')}</p>
+            <p class="text-sm font-semibold leading-tight">${b.material}</p>
+            ${b.price ? `<p class="text-gold text-sm font-bold mt-0.5">${b.price}</p>` : ''}
+          </div>
+        </div>
+        <div class="flex flex-col gap-2">${btns}</div>
+        <p class="text-[10px] text-cream/40 mt-3 leading-snug">${t('buy.disclaimer')}</p>
+      </div>`;
+  }
+
+  /* ==========================================================
+     ÉTAT & LOGIQUE
+     ========================================================== */
+  const state = { material: 'all', players: null, mood: null, time: null, deck: null, search: '', likedOnly: false };
+  let modalNavIds = [];   // ordre des jeux affichés dans la grille (pour Précédent/Suivant)
+  let currentModalId = null;
+
+  // ❤️ Favoris — persistés dans le navigateur (localStorage)
+  let likes;
+  try { likes = new Set(JSON.parse(localStorage.getItem('ludo_likes') || '[]')); } catch (e) { likes = new Set(); }
+  function toggleLike(id) {
+    if (likes.has(id)) likes.delete(id); else likes.add(id);
+    try { localStorage.setItem('ludo_likes', JSON.stringify([...likes])); } catch (e) {}
+    render();
+  }
+
+  function playerMatches(gamePlayers, filter) {
+    // gamePlayers ex: '1', '2', '3-4', '5+'. Filtre identique — on gère le chevauchement logique.
+    if (!filter) return true;
+    if (gamePlayers === filter) return true;
+    // '5+' game aussi valable si l'on cherche des jeux à beaucoup de joueurs
+    if (filter === '3-4' && gamePlayers === '5+') return false;
+    return gamePlayers === filter;
+  }
+
+  function getFiltered() {
+    return GAMES.filter(g => {
+      if (state.likedOnly && !likes.has(g.id)) return false;
+      if (state.material !== 'all' && matCat(g) !== state.material) return false;
+      if (state.players && g.players !== state.players) return false;
+      if (state.mood && g.mood !== state.mood) return false;
+      if (state.time && g.time !== state.time) return false;
+      if (state.deck && g.deck !== state.deck) return false;
+      if (state.search) {
+        const q = state.search.toLowerCase();
+        const gl = L(g);
+        const hay = [g.title, g.tagline, gl.title, gl.tagline].filter(Boolean).join(' ').toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+  }
+
+  /* ==========================================================
+     RENDU DES FILTRES
+     ========================================================== */
+  function renderFilters() {
+    const container = document.getElementById('filterGroups');
+    container.innerHTML = '';
+    Object.entries(FILTERS).forEach(([key, group]) => {
+      if (key === 'deck' && ['des', 'aucun', 'edite'].includes(state.material)) return; // paquet non pertinent
+      const wrap = document.createElement('div');
+      wrap.innerHTML = `
+        <div class="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-cream/60 mb-2">
+          <i data-lucide="${group.icon}" class="w-3.5 h-3.5"></i> ${t('filter.' + key)}
+        </div>
+        <div class="flex flex-wrap gap-1.5" data-group="${key}"></div>`;
+      const chips = wrap.querySelector('[data-group]');
+      group.options.forEach(opt => {
+        const btn = document.createElement('button');
+        const active = state[key] === opt.value;
+        btn.className = `chip text-xs px-2.5 py-1.5 rounded-lg border ${active
+          ? 'bg-gold text-felt-deep border-gold font-semibold'
+          : 'bg-black/20 border-white/10 text-cream/80 hover:border-gold/40 hover:bg-white/5'}`;
+        btn.textContent =
+          key === 'mood'    ? t('mood.' + opt.value) :
+          key === 'players' ? t('fplayers.' + opt.value) :
+          key === 'time'    ? t('time.' + opt.value) : opt.value;
+        btn.onclick = () => {
+          state[key] = state[key] === opt.value ? null : opt.value;
+          render();
+        };
+        chips.appendChild(btn);
+      });
+      container.appendChild(wrap);
+    });
+    lucide.createIcons();
+  }
+
+  /* ==========================================================
+     RENDU DE LA GRILLE
+     ========================================================== */
+  function gameCard(gRaw, index) {
+    const g = L(gRaw);
+    const mat = matInfo(g);
+    return `
+    <button data-id="${gRaw.id}" style="animation-delay:${index * 40}ms"
+      class="game-card card-hover glass rounded-2xl p-5 text-left flex flex-col animate-fade-up group relative overflow-hidden">
+      <div class="absolute -right-6 -top-6 text-7xl opacity-10 group-hover:opacity-20 group-hover:scale-110 transition-all duration-300 select-none">${g.emoji}</div>
+      <div class="flex items-start justify-between gap-2 relative">
+        <div class="text-4xl mb-3">${g.emoji}</div>
+        <div class="flex items-start gap-2">
+          <div class="flex flex-col items-end gap-1.5">
+            ${g.alcool ? '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/40">18+</span>' : ''}
+            <span class="text-[10px] font-semibold uppercase tracking-wide px-2 py-1 rounded-full bg-white/10 text-cream/80">
+              ${MOOD_EMOJI[g.mood]} ${moodLabel(g.mood)}
+            </span>
+          </div>
+          <span data-like="${gRaw.id}" role="button" aria-label="Favori" title="Ajouter aux favoris" class="like-btn text-lg leading-none cursor-pointer hover:scale-125 transition select-none">${likes.has(gRaw.id) ? '❤️' : '🤍'}</span>
+        </div>
+      </div>
+      <h3 class="font-display font-bold text-xl leading-tight relative">${g.title}</h3>
+      <p class="text-sm text-cream/70 mt-1.5 flex-1 relative">${g.tagline}</p>
+      <div class="flex flex-wrap items-center gap-2 mt-4 relative">
+        <span class="inline-flex items-center gap-1 text-xs bg-heart/15 text-cream px-2 py-1 rounded-md">
+          <i data-lucide="users" class="w-3 h-3"></i> ${g.playersLabel}
+        </span>
+        <span class="inline-flex items-center gap-1 text-xs bg-white/10 px-2 py-1 rounded-md">
+          <i data-lucide="clock" class="w-3 h-3"></i> ${timeLabel(g.time)}
+        </span>
+        <span class="inline-flex items-center gap-1 text-xs bg-gold/20 text-gold px-2 py-1 rounded-md">
+          <i data-lucide="${mat.icon}" class="w-3 h-3"></i> ${mat.label}
+        </span>
+      </div>
+    </button>`;
+  }
+
+  function render() {
+    renderFilters();
+    // les favoris remontent en tête de grille (tri stable)
+    const list = getFiltered().sort((a, b) => (likes.has(b.id) - likes.has(a.id)));
+    modalNavIds = list.map(g => g.id);
+    const grid = document.getElementById('grid');
+    const empty = document.getElementById('emptyState');
+    const count = document.getElementById('resultsCount');
+
+    const plural = list.length > 1;
+    count.textContent = t('results.count', { n: list.length, x: plural ? 'x' : '', s: plural ? 's' : '' });
+
+    if (list.length === 0) {
+      grid.innerHTML = '';
+      empty.classList.remove('hidden');
+    } else {
+      empty.classList.add('hidden');
+      grid.innerHTML = list.map((g, i) => gameCard(g, i)).join('');
+      grid.querySelectorAll('.game-card').forEach(el => {
+        el.onclick = () => openModal(el.dataset.id);
+      });
+      grid.querySelectorAll('.like-btn').forEach(el => {
+        el.onclick = (e) => { e.stopPropagation(); toggleLike(el.dataset.like); };
+      });
+    }
+    lucide.createIcons();
+
+    // update material segmented control
+    document.querySelectorAll('#materialToggle .mat-btn').forEach(b => {
+      const on = state.material === b.dataset.mat;
+      b.className = `mat-btn text-xs sm:text-sm px-3 py-1.5 rounded-lg transition whitespace-nowrap ${on
+        ? 'bg-gold text-felt-deep font-semibold'
+        : 'text-cream/80 hover:bg-white/5'}`;
+    });
+
+    // active advanced-filter count badge
+    const advCount = [state.players, state.mood, state.time, state.deck].filter(Boolean).length;
+    const fc = document.getElementById('filterCount');
+    fc.textContent = advCount;
+    fc.classList.toggle('hidden', advCount === 0);
+
+    // favoris button state
+    document.getElementById('favCount').textContent = likes.size;
+    const favBtn = document.getElementById('favToggle');
+    favBtn.classList.toggle('border-gold', state.likedOnly);
+    favBtn.classList.toggle('text-gold', state.likedOnly);
+    favBtn.classList.toggle('bg-gold/10', state.likedOnly);
+
+    // toggle reset visibility
+    const anyActive = state.material !== 'all' || state.players || state.mood || state.time || state.deck || state.search;
+    document.getElementById('resetBtn').classList.toggle('hidden', !anyActive);
+
+    // toggle responsible-drinking notice
+    document.getElementById('alcoolNotice').classList.toggle('hidden', state.mood !== 'alcool');
+  }
+
+  /* ==========================================================
+     MODALE DÉTAIL
+     ========================================================== */
+  function openModal(id) {
+    const gRaw = GAMES.find(x => x.id === id);
+    if (!gRaw) return;
+    const g = L(gRaw);
+    const mat = matInfo(g);
+    const content = document.getElementById('modalContent');
+    content.innerHTML = `
+      <div class="relative bg-gradient-to-br ${g.color} p-6 sm:p-8">
+        <button id="closeModal" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/30 hover:bg-black/50 flex items-center justify-center transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+        <button id="modalLike" class="absolute top-4 right-16 h-9 px-3 rounded-full bg-black/30 hover:bg-black/50 flex items-center gap-1.5 text-sm transition-colors">
+          <span class="text-base leading-none">${likes.has(gRaw.id) ? '❤️' : '🤍'}</span>
+          <span class="hidden sm:inline">${likes.has(gRaw.id) ? t('modal.liked') : t('modal.like')}</span>
+        </button>
+        <div class="text-6xl mb-3">${g.emoji}</div>
+        <h2 class="font-display font-extrabold text-3xl sm:text-4xl">${g.title}</h2>
+        <p class="text-cream/85 mt-1">${g.tagline}</p>
+        <div class="flex flex-wrap gap-2 mt-4">
+          <span class="inline-flex items-center gap-1 text-xs bg-black/25 px-2.5 py-1.5 rounded-lg"><i data-lucide="users" class="w-3.5 h-3.5"></i> ${g.playersLabel}</span>
+          <span class="inline-flex items-center gap-1 text-xs bg-black/25 px-2.5 py-1.5 rounded-lg"><i data-lucide="clock" class="w-3.5 h-3.5"></i> ${timeLabel(g.time)}</span>
+          <span class="inline-flex items-center gap-1 text-xs bg-black/25 px-2.5 py-1.5 rounded-lg"><i data-lucide="${mat.icon}" class="w-3.5 h-3.5"></i> ${mat.label}</span>
+          <span class="inline-flex items-center gap-1 text-xs bg-black/25 px-2.5 py-1.5 rounded-lg">${MOOD_EMOJI[g.mood]} ${moodLabel(g.mood)}</span>
+        </div>
+        ${g.alcool ? `
+        <div class="mt-4 flex items-start gap-2 bg-amber-500/15 border border-amber-400/40 rounded-xl px-3 py-2.5 text-[13px] text-amber-100 leading-snug">
+          <i data-lucide="alert-triangle" class="w-4 h-4 mt-0.5 shrink-0"></i>
+          <span>${t('modal.alcool')}</span>
+        </div>` : ''}
+      </div>
+
+      <div class="p-6 sm:p-8 space-y-7">
+        <section>
+          <h3 class="flex items-center gap-2 font-display font-bold text-lg mb-2"><i data-lucide="package" class="w-5 h-5 text-gold"></i> ${t('modal.material')}</h3>
+          <p class="text-cream/80 text-sm leading-relaxed">${g.material}</p>
+        </section>
+
+        <section>
+          <h3 class="flex items-center gap-2 font-display font-bold text-lg mb-2"><i data-lucide="target" class="w-5 h-5 text-heart"></i> ${t('modal.objective')}</h3>
+          <p class="text-cream/80 text-sm leading-relaxed">${g.objective}</p>
+        </section>
+
+        <section>
+          <h3 class="flex items-center gap-2 font-display font-bold text-lg mb-3"><i data-lucide="list-ordered" class="w-5 h-5 text-gold"></i> ${t('modal.rules')}</h3>
+          <ol class="prose-rules text-cream/80 text-sm leading-relaxed">
+            ${(g.rules || []).map(r => `<li>${r}</li>`).join('')}
+          </ol>
+        </section>
+
+        ${g.tips ? `
+        <section class="glass rounded-2xl p-5 border-gold/20">
+          <h3 class="flex items-center gap-2 font-display font-bold text-lg mb-2"><i data-lucide="lightbulb" class="w-5 h-5 text-gold"></i> ${t('modal.tips')}</h3>
+          <p class="text-cream/85 text-sm leading-relaxed">${g.tips}</p>
+        </section>` : ''}
+
+        ${(() => { const buy = buyInfo(g); return buy ? `
+        <section>
+          <h3 class="flex items-center gap-2 font-display font-bold text-lg mb-3"><i data-lucide="shopping-bag" class="w-5 h-5 text-gold"></i> ${t('modal.buy')}</h3>
+          <div class="max-w-md">${buyBlockHTML(g)}</div>
+        </section>` : ''; })()}
+
+        <!-- AD — fin de règle (colle ici ton unité AdSense display) -->
+        <div class="ad-slot" data-ad="fin-de-regle"><span>${t('ad.end')}</span></div>
+
+        <div class="grid grid-cols-3 gap-2">
+          <button id="modalPrevBtn" class="chip inline-flex items-center justify-center gap-1.5 bg-white/10 border border-white/15 text-cream font-semibold px-2 py-3 rounded-xl hover:bg-white/15">
+            <i data-lucide="chevron-left" class="w-4 h-4"></i><span class="hidden sm:inline">${t('modal.prev')}</span>
+          </button>
+          <button id="randomFromModal" class="chip inline-flex items-center justify-center gap-1.5 bg-gold text-felt-deep font-semibold px-2 py-3 rounded-xl hover:brightness-105">
+            <i data-lucide="dices" class="w-4 h-4"></i><span class="hidden sm:inline">${t('modal.another')}</span>
+          </button>
+          <button id="modalNextBtn" class="chip inline-flex items-center justify-center gap-1.5 bg-white/10 border border-white/15 text-cream font-semibold px-2 py-3 rounded-xl hover:bg-white/15">
+            <span class="hidden sm:inline">${t('modal.next')}</span><i data-lucide="chevron-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>`;
+
+    const modal = document.getElementById('modal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    document.body.style.overflow = 'hidden';
+    lucide.createIcons();
+
+    document.getElementById('closeModal').onclick = closeModal;
+    document.getElementById('modalBackdrop').onclick = closeModal;
+    document.getElementById('randomFromModal').onclick = () => pickRandom();
+    document.getElementById('modalPrevBtn').onclick = () => navModal(-1);
+    document.getElementById('modalNextBtn').onclick = () => navModal(1);
+    // navigation Précédent/Suivant : mémorise le jeu courant et affiche les flèches latérales
+    currentModalId = gRaw.id;
+    document.getElementById('modalPrev').classList.remove('!hidden');
+    document.getElementById('modalNext').classList.remove('!hidden');
+    const modalLikeBtn = document.getElementById('modalLike');
+    modalLikeBtn.onclick = () => {
+      toggleLike(gRaw.id);
+      const liked = likes.has(gRaw.id);
+      modalLikeBtn.innerHTML = `<span class="text-base leading-none">${liked ? '❤️' : '🤍'}</span><span class="hidden sm:inline">${liked ? t('modal.liked') : t('modal.like')}</span>`;
+    };
+    content.scrollTop = 0;
+  }
+
+  function closeModal() {
+    const modal = document.getElementById('modal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    document.body.style.overflow = '';
+    currentModalId = null;
+    hideModalArrows();
+  }
+
+  function hideModalArrows() {
+    document.getElementById('modalPrev').classList.add('!hidden');
+    document.getElementById('modalNext').classList.add('!hidden');
+  }
+
+  // Navigation Précédent (-1) / Suivant (+1) dans l'ordre de la grille, en boucle.
+  function navModal(dir) {
+    if (!currentModalId) return;
+    const ids = modalNavIds.length ? modalNavIds : GAMES.map(g => g.id);
+    const i = ids.indexOf(currentModalId);
+    if (i === -1) return;
+    openModal(ids[(i + dir + ids.length) % ids.length]);
+  }
+
+  document.getElementById('modalPrev').onclick = () => navModal(-1);
+  document.getElementById('modalNext').onclick = () => navModal(1);
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { closeModal(); return; }
+    if (!currentModalId) return; // ne navigue que sur une fiche de jeu (pas le formulaire de proposition)
+    if (e.key === 'ArrowLeft') { e.preventDefault(); navModal(-1); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); navModal(1); }
+  });
+
+  /* ==========================================================
+     JEU AU HASARD
+     ========================================================== */
+  function pickRandom() {
+    // On tire parmi les jeux filtrés si possible, sinon parmi tous.
+    const pool = getFiltered().length ? getFiltered() : GAMES;
+    const g = pool[Math.floor(Math.random() * pool.length)];
+    // petit effet : ferme puis rouvre
+    closeModal();
+    setTimeout(() => openModal(g.id), 120);
+  }
+
+  /* ==========================================================
+     ÉVÉNEMENTS GLOBAUX
+     ========================================================== */
+  function resetAll() {
+    state.material = 'all';
+    state.likedOnly = false;
+    state.players = state.mood = state.time = state.deck = null;
+    state.search = '';
+    document.getElementById('searchInput').value = '';
+    render();
+  }
+
+  document.getElementById('randomBtn').onclick = pickRandom;
+  document.getElementById('resetBtn').onclick = resetAll;
+  document.getElementById('resetBtnMobile').onclick = resetAll;
+  document.getElementById('searchInput').addEventListener('input', e => {
+    state.search = e.target.value.trim();
+    render();
+  });
+
+  document.querySelectorAll('#materialToggle .mat-btn').forEach(btn => {
+    btn.onclick = () => {
+      state.material = btn.dataset.mat;
+      if (['des', 'aucun', 'edite'].includes(state.material) && state.deck) state.deck = null; // paquet non pertinent
+      render();
+    };
+  });
+
+  document.getElementById('toggleFilters').onclick = () => {
+    const adv = document.getElementById('advancedFilters');
+    const nowHidden = adv.classList.toggle('hidden');
+    document.getElementById('filterChevron').style.transform = nowHidden ? '' : 'rotate(180deg)';
+  };
+
+  document.getElementById('favToggle').onclick = () => {
+    state.likedOnly = !state.likedOnly;
+    render();
+  };
+
+  /* ==========================================================
+     FORMULAIRE : PROPOSER UN JEU
+     ========================================================== */
+  const proposeModal   = document.getElementById('proposeModal');
+  const proposeForm     = document.getElementById('proposeForm');
+  const proposeSuccess  = document.getElementById('proposeSuccess');
+  const proposeError    = document.getElementById('proposeError');
+
+  function openPropose() {
+    proposeForm.classList.remove('hidden');
+    proposeSuccess.classList.add('hidden');
+    proposeError.classList.add('hidden');
+    proposeForm.reset();
+    proposeModal.classList.remove('hidden');
+    proposeModal.classList.add('flex');
+    document.body.style.overflow = 'hidden';
+    lucide.createIcons();
+  }
+  function closePropose() {
+    proposeModal.classList.add('hidden');
+    proposeModal.classList.remove('flex');
+    document.body.style.overflow = '';
+  }
+
+  document.getElementById('proposeBtn').onclick = openPropose;
+  document.getElementById('proposeClose').onclick = closePropose;
+  document.getElementById('proposeBackdrop').onclick = closePropose;
+  document.getElementById('proposeDone').onclick = closePropose;
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && !proposeModal.classList.contains('hidden')) closePropose();
+  });
+
+  proposeForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    proposeError.classList.add('hidden');
+    const fd = new FormData(proposeForm);
+    const payload = {
+      title: fd.get('title'),
+      emoji: fd.get('emoji'),
+      tagline: fd.get('tagline'),
+      mood: fd.get('mood'),
+      time: fd.get('time'),
+      players: fd.get('players'),
+      playersLabel: fd.get('playersLabel'),
+      type: fd.get('type'),
+      material: fd.get('material'),
+      objective: fd.get('objective'),
+      rules: fd.get('rules'),           // le serveur découpe par ligne
+      tips: fd.get('tips'),
+      alcool: fd.get('alcool') === 'on',
+      submitter_name: fd.get('submitter_name'),
+      submitter_email: fd.get('submitter_email'),
+      submitter_note: fd.get('submitter_note'),
+    };
+    const btn = document.getElementById('proposeSubmit');
+    btn.disabled = true;
+    try {
+      const res = await fetch('/api/proposals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || t('err.generic'));
+      proposeForm.classList.add('hidden');
+      proposeSuccess.classList.remove('hidden');
+      lucide.createIcons();
+    } catch (err) {
+      proposeError.textContent = err.message;
+      proposeError.classList.remove('hidden');
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  /* ==========================================================
+     PUBLICITÉ, GOOGLE TAG MANAGER & CONSENTEMENT COOKIES (RGPD/CNIL)
+     ========================================================== */
+  // Activation des publicités / GTM et identifiants : configurables
+  // depuis l'espace admin (onglet Réglages) → SETTINGS.adsEnabled / adsenseClient
+  // et SETTINGS.gtmEnabled / gtmId.
+  // Charge le conteneur Google Tag Manager (script + <noscript> de repli),
+  // une seule fois. GTM lui-même décide ensuite quelles balises il déclenche ;
+  // on ne le charge qu'après consentement, comme les autres scripts tiers.
+  function loadGTM(containerId) {
+    if (!containerId || window.__ludoGtmLoaded) return;
+    window.__ludoGtmLoaded = true;
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+    const script = document.createElement('script');
+    script.async = true;
+    script.dataset.pickgameGtm = 'true';
+    script.src = `https://www.googletagmanager.com/gtm.js?id=${encodeURIComponent(containerId)}`;
+    document.head.appendChild(script);
+    const noscript = document.createElement('noscript');
+    const iframe = document.createElement('iframe');
+    iframe.src = `https://www.googletagmanager.com/ns.html?id=${encodeURIComponent(containerId)}`;
+    iframe.height = '0';
+    iframe.width = '0';
+    iframe.style.display = 'none';
+    iframe.style.visibility = 'hidden';
+    noscript.appendChild(iframe);
+    document.body.insertBefore(noscript, document.body.firstChild);
+  }
+  function initCookieBanner() {
+    const banner = document.getElementById('cookieBanner');
+    const saved = (function () { try { return localStorage.getItem('ludo_cookie_consent'); } catch (e) { return null; } })();
+    const loadConsentIntegrations = () => {
+      if (SETTINGS.gtmEnabled && SETTINGS.gtmId) loadGTM(SETTINGS.gtmId);
+      if (!SETTINGS.adsEnabled || !SETTINGS.adsenseClient) return;
+      document.documentElement.classList.add('ads-enabled');
+      if (document.querySelector('script[data-pickgame-adsense]')) return;
+      const script = document.createElement('script');
+      script.async = true;
+      script.dataset.pickgameAdsense = 'true';
+      script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${encodeURIComponent(SETTINGS.adsenseClient)}`;
+      script.crossOrigin = 'anonymous';
+      document.head.appendChild(script);
+    };
+    const setConsent = (v) => {
+      try { localStorage.setItem('ludo_cookie_consent', v); } catch (e) {}
+      banner.classList.add('hidden');
+      if (v === 'accepted') loadConsentIntegrations();
+    };
+    if (!saved) banner.classList.remove('hidden'); // 1re visite : on demande
+    if (saved === 'accepted') loadConsentIntegrations();
+    document.getElementById('cookieAccept').onclick = () => setConsent('accepted');
+    document.getElementById('cookieRefuse').onclick = () => setConsent('refused');
+    document.getElementById('footerCookies').onclick = () => banner.classList.remove('hidden'); // rouvrir depuis le footer
+    // 👉 Ne charge tes scripts pub/analytics QUE si le consentement vaut 'accepted'.
+  }
+
+  /* ==========================================================
+     INIT — chargement des jeux depuis l'API
+     ========================================================== */
+  // Sélecteur de langue
+  document.querySelectorAll('.lang-btn').forEach(b => b.onclick = () => setLang(b.dataset.lang));
+
+  async function loadGames() {
+    const badge = document.getElementById('gameCountBadge');
+    try {
+      const res = await fetch('/api/games');
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      GAMES = await res.json();
+      badge.textContent = t('badge.count', { n: GAMES.length });
+    } catch (e) {
+      GAMES = [];
+      badge.textContent = t('err.load');
+      console.error('Chargement des jeux impossible :', e);
+    }
+    render();
+    lucide.createIcons();
+  }
+
+  // Réglages (affiliation, publicité), configurables depuis /admin.
+  async function loadSettings() {
+    try {
+      const res = await fetch('/api/settings');
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      SETTINGS = await res.json();
+    } catch (e) {
+      console.error('Chargement des réglages impossible :', e);
+    }
+  }
+
+  // Init : applique la langue aux textes statiques, charge les réglages puis
+  // initialise le bandeau cookies, et enfin charge les jeux.
+  applyI18n();
+  loadSettings().then(() => {
+    initCookieBanner();
+    loadGames();
+  });
+  </script>
+</body>
+</html>

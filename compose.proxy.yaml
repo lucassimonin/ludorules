@@ -1,0 +1,30 @@
+# =============================================================================
+# Déploiement DERRIÈRE le reverse proxy partagé (voir ../proxy/).
+# L'app sert en HTTP interne (pas de TLS ici) ; le proxy possède 80/443 + TLS.
+#
+#   docker network create web       # une seule fois (partagé avec le proxy)
+#   cp .env.prod.dist .env.prod     # renseigner LUDO_JWT_SECRET
+#   docker compose --env-file .env.prod -f compose.proxy.yaml up -d --build
+# =============================================================================
+
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      LUDO_JWT_SECRET: ${LUDO_JWT_SECRET:?LUDO_JWT_SECRET est requis}
+    volumes:
+      - ludorules_data:/app/data   # base SQLite (persistante)
+    networks:
+      web:
+        aliases:
+          - ludorules-app   # nom par lequel le proxy joint cette app
+
+networks:
+  web:
+    external: true
+
+volumes:
+  ludorules_data:

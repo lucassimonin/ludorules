@@ -1,0 +1,23 @@
+{
+  "name": "ludorules",
+  "version": "2.0.0",
+  "description": "Ludorules — catalogue trilingue (FR/EN/ES) de jeux de cartes & de dés, avec admin, traduction et validation des propositions.",
+  "type": "commonjs",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "seed": "node scripts/seed.js",
+    "create-admin": "node scripts/create-admin.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^11.3.0",
+    "cookie-parser": "^1.4.6",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2"
+  }
+}
