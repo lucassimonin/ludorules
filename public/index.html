@@ -117,28 +117,28 @@
 
   <!-- ============ HEADER ============ -->
   <header class="sticky top-0 z-40 glass">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+    <div class="max-w-6xl mx-auto px-3 sm:px-6 h-16 flex items-center justify-between gap-2 sm:gap-4">
       <a href="#" class="flex items-center gap-2 group">
-        <span class="text-2xl leading-none group-hover:rotate-6 transition-transform">🃏</span>
-        <span class="font-display font-extrabold text-xl tracking-tight">
+        <span class="text-xl sm:text-2xl leading-none group-hover:rotate-6 transition-transform">🃏</span>
+        <span class="font-display font-extrabold text-lg sm:text-xl tracking-tight">
           Ludo<span class="text-gold">rules</span>
         </span>
       </a>
-      <div class="hidden md:flex items-center gap-2 text-sm text-cream/70">
+      <div class="hidden lg:flex items-center gap-2 text-sm text-cream/70">
         <span class="text-heart">♥</span><span>♠</span><span class="text-heart">♦</span><span>♣</span><span class="ml-1">🎲</span>
         <span class="ml-2" data-i18n="header.tagline">Le catalogue ultime des jeux de cartes &amp; de dés</span>
       </div>
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-1.5 sm:gap-2">
         <div id="langToggle" class="flex items-center bg-black/20 border border-white/10 rounded-full p-0.5 text-xs font-semibold">
-          <button data-lang="fr" class="lang-btn px-2.5 py-1 rounded-full transition">FR</button>
-          <button data-lang="en" class="lang-btn px-2.5 py-1 rounded-full transition">EN</button>
-          <button data-lang="es" class="lang-btn px-2.5 py-1 rounded-full transition">ES</button>
+          <button data-lang="fr" class="lang-btn px-2 sm:px-2.5 py-1 rounded-full transition">FR</button>
+          <button data-lang="en" class="lang-btn px-2 sm:px-2.5 py-1 rounded-full transition">EN</button>
+          <button data-lang="es" class="lang-btn px-2 sm:px-2.5 py-1 rounded-full transition">ES</button>
         </div>
-        <button id="proposeBtn" class="chip inline-flex items-center gap-2 whitespace-nowrap bg-white/10 border border-white/15 text-cream font-semibold text-sm px-4 py-2 rounded-full hover:border-gold/50 hover:bg-white/15">
+        <button id="proposeBtn" class="chip inline-flex items-center gap-2 whitespace-nowrap bg-white/10 border border-white/15 text-cream font-semibold text-sm p-2 sm:px-4 sm:py-2 rounded-full hover:border-gold/50 hover:bg-white/15">
           <i data-lucide="plus-circle" class="w-4 h-4"></i>
           <span class="hidden sm:inline" data-i18n="btn.propose">Ajouter mon jeu</span>
         </button>
-        <button id="randomBtn" class="chip inline-flex items-center gap-2 whitespace-nowrap bg-gold text-felt-deep font-semibold text-sm px-4 py-2 rounded-full shadow-lg hover:shadow-gold/40 hover:brightness-105">
+        <button id="randomBtn" class="chip inline-flex items-center gap-2 whitespace-nowrap bg-gold text-felt-deep font-semibold text-sm p-2 sm:px-4 sm:py-2 rounded-full shadow-lg hover:shadow-gold/40 hover:brightness-105">
           <i data-lucide="dices" class="w-4 h-4"></i>
           <span class="hidden sm:inline" data-i18n="btn.random">Au hasard</span>
         </button>
