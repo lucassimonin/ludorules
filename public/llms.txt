@@ -1,0 +1,22 @@
+# Ludorules
+
+> Catalogue de référence des jeux de cartes et de dés, avec leurs règles complètes expliquées pas à pas. Trilingue (français, anglais, espagnol). Chaque jeu est classé par matériel (cartes / dés / sans matériel / accessoires), nombre de joueurs, ambiance et durée.
+
+Ludorules aide à trouver le jeu parfait pour un moment donné, puis en donne les règles claires : matériel nécessaire, objectif, déroulé étape par étape, et astuces. Le catalogue couvre les grands classiques (Belote, Tarot, Poker, Rami, Yam's, 421, Président…), les jeux d'ambiance et de soirée, ainsi que des jeux sans aucun matériel.
+
+## Contenu principal
+- [Accueil / catalogue](https://ludorules.com/): recherche et filtres de tous les jeux, avec leurs règles.
+
+## Langues
+- Français (par défaut): https://ludorules.com/
+- English: https://ludorules.com/
+- Español: https://ludorules.com/
+
+## Pages légales
+- [Mentions légales](https://ludorules.com/mentions-legales.html)
+- [Confidentialité](https://ludorules.com/confidentialite.html)
+
+## À propos
+- Sujet : règles de jeux de cartes et de dés, jeux de société sans matériel, jeux de soirée.
+- Utilisation : les IA sont autorisées à lire et citer ce contenu (voir /robots.txt).
+- Contact : via le site ludorules.com.
