@@ -1,0 +1,65 @@
+name: CI / Deploy
+
+# À chaque push sur main : vérifications (install + syntaxe), puis déploiement
+# SSH sur le serveur. Les pull requests ne font que les vérifications.
+# Déclenchement manuel possible depuis l'onglet Actions (workflow_dispatch).
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  checks:
+    name: Install & syntax check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Syntax check (node --check)
+        run: |
+          node --version
+          find src scripts -name '*.js' -print0 | xargs -0 -r -n1 node --check
+          echo "✓ Aucun problème de syntaxe"
+
+  deploy:
+    name: Deploy to server
+    needs: checks
+    runs-on: ubuntu-latest
+    # Jamais sur une pull request : uniquement push sur main (ou lancement manuel).
+    if: github.event_name != 'pull_request'
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.DEPLOY_SSH_HOST }}
+          username: ${{ secrets.DEPLOY_SSH_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: ${{ secrets.DEPLOY_SSH_PORT || '22' }}
+          command_timeout: 30m
+          script: |
+            set -euo pipefail
+            cd "${{ secrets.DEPLOY_PATH }}"
+            echo "→ Mise à jour du code (origin/main)"
+            git fetch --all --prune
+            git reset --hard origin/main
+            echo "→ Réseau partagé du proxy (créé s'il manque)"
+            docker network create web 2>/dev/null || true
+            echo "→ Build & (re)démarrage du conteneur"
+            docker compose --env-file .env.prod -f compose.proxy.yaml up -d --build
+            echo "→ Nettoyage des images inutilisées"
+            docker image prune -f
+            echo "✓ Déploiement terminé"
