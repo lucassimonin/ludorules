@@ -9,6 +9,7 @@ const auth = require('./auth');
 const games = require('./games');
 const settings = require('./settings');
 const legal = require('./legal');
+const gamepage = require('./gamepage');
 
 const app = express();
 app.disable('x-powered-by');
@@ -256,6 +257,49 @@ app.put('/api/admin/legal/:slug/:lang', auth.requireAuth, (req, res) => {
    ============================================================ */
 
 const PUBLIC_DIR = path.join(__dirname, '..', 'public');
+
+/* ============================================================
+   PAGES SEO PAR JEU (rendu côté serveur) — /jeux/:slug
+   ============================================================ */
+app.get('/jeux/:slug', (req, res) => {
+  const row = games.getRow(req.params.slug);
+  if (!row || row.status !== 'published') {
+    return res.status(404).sendFile(path.join(PUBLIC_DIR, 'index.html'));
+  }
+  const game = games.getById(req.params.slug);
+  const others = games.listPublished().filter((g) => g.id !== game.id);
+  // mélange léger pour varier les suggestions
+  for (let i = others.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [others[i], others[j]] = [others[j], others[i]];
+  }
+  res.set('Content-Type', 'text/html; charset=utf-8');
+  res.send(gamepage.renderGamePage(game, {
+    settings: settings.getSettings(),
+    otherGames: others.slice(0, 6),
+  }));
+});
+
+// Sitemap dynamique : accueil + pages légales + toutes les pages de jeux publiés.
+app.get('/sitemap.xml', (req, res) => {
+  try {
+    const base = 'https://ludorules.com';
+    const urls = [`${base}/`];
+    ['mentions-legales.html', 'confidentialite.html', 'en/legal-notice.html',
+     'en/privacy.html', 'es/aviso-legal.html', 'es/privacidad.html']
+      .forEach((p) => urls.push(`${base}/${p}`));
+    games.listPublished().forEach((g) => urls.push(`${base}/jeux/${g.id}`));
+    const body = '<?xml version="1.0" encoding="UTF-8"?>\n' +
+      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
+      urls.map((u) => `  <url><loc>${u}</loc></url>`).join('\n') +
+      '\n</urlset>\n';
+    res.set('Content-Type', 'application/xml; charset=utf-8');
+    res.send(body);
+  } catch (e) {
+    res.status(500).end();
+  }
+});
+
 app.use(express.static(PUBLIC_DIR));
 
 app.get('/admin', (req, res) => res.sendFile(path.join(PUBLIC_DIR, 'admin.html')));
