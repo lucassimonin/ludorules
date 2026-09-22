@@ -9,6 +9,29 @@
 <meta name="theme-color" content="#0a3d26" />
 <meta name="robots" content="index,follow" />
 <meta name="google-adsense-account" content="ca-pub-3108772554550232" />
+<!-- Google Consent Mode v2 — refus par défaut dans l'EEE / UK / Suisse ;
+     la CMP certifiée de Google recueille le choix et met à jour le consentement.
+     Hors de ces zones : comportement normal. -->
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){ dataLayer.push(arguments); }
+  // Base : autorisé (reste du monde, comportement normal)
+  gtag('consent', 'default', {
+    ad_storage: 'granted',
+    ad_user_data: 'granted',
+    ad_personalization: 'granted',
+    analytics_storage: 'granted'
+  });
+  // EEE / UK / Suisse : refusé par défaut → la CMP de Google recueille le choix
+  gtag('consent', 'default', {
+    ad_storage: 'denied',
+    ad_user_data: 'denied',
+    ad_personalization: 'denied',
+    analytics_storage: 'denied',
+    region: ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO','GB','CH'],
+    wait_for_update: 500
+  });
+</script>
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="Ludorules" />
 <meta property="og:locale" content="fr_FR" />
@@ -249,15 +272,9 @@
     </nav>
   </footer>
 
-  <!-- ============ BANDEAU COOKIES (consentement CNIL) ============ -->
-  <div id="cookieBanner" class="hidden fixed bottom-3 inset-x-3 sm:inset-x-auto sm:right-4 sm:left-4 md:left-auto md:max-w-md z-50 glass rounded-2xl p-4 shadow-2xl border border-white/15">
-    <p id="cookieText" class="text-sm text-cream/85 leading-snug" data-i18n="cb.text">Nous utilisons des cookies pour mesurer l'audience et afficher des publicités. Tu peux accepter ou refuser.</p>
-    <div class="flex items-center gap-2 mt-3">
-      <button id="cookieAccept" class="chip flex-1 bg-gold text-felt-deep font-semibold text-sm px-3 py-2 rounded-lg hover:brightness-105" data-i18n="cb.accept">Accepter</button>
-      <button id="cookieRefuse" class="chip flex-1 bg-white/10 border border-white/15 text-cream font-semibold text-sm px-3 py-2 rounded-lg hover:bg-white/15" data-i18n="cb.refuse">Refuser</button>
-      <a id="cookieLearn" href="/confidentialite.html" class="text-xs text-cream/50 hover:text-cream underline px-1" data-i18n="cb.learn">En savoir plus</a>
-    </div>
-  </div>
+  <!-- Le bandeau cookies maison a été remplacé par la CMP certifiée de Google
+       (Consent Mode v2). Le consentement européen est géré par Google ; le lien
+       « Cookies » du footer rouvre le panneau de consentement de Google. -->
 
   <!-- ============ MODAL ============ -->
   <div id="modal" class="hidden fixed inset-0 z-50 items-center justify-center p-4">
@@ -1209,32 +1226,32 @@
     noscript.appendChild(iframe);
     document.body.insertBefore(noscript, document.body.firstChild);
   }
+  // La CMP certifiée de Google (livrée avec le script AdSense) recueille le
+  // consentement dans l'EEE / UK / Suisse et met à jour le Consent Mode défini
+  // dans le <head>. On charge donc GTM + AdSense dès le chargement : GA4 respecte
+  // le Consent Mode (aucune donnée collectée en Europe tant que le visiteur n'a
+  // pas accepté). Hors de ces zones : comportement normal.
   function initCookieBanner() {
-    const banner = document.getElementById('cookieBanner');
-    const saved = (function () { try { return localStorage.getItem('ludo_cookie_consent'); } catch (e) { return null; } })();
-    const loadConsentIntegrations = () => {
-      if (SETTINGS.gtmEnabled && SETTINGS.gtmId) loadGTM(SETTINGS.gtmId);
-      if (!SETTINGS.adsEnabled || !SETTINGS.adsenseClient) return;
+    if (SETTINGS.gtmEnabled && SETTINGS.gtmId) loadGTM(SETTINGS.gtmId);
+    if (SETTINGS.adsEnabled && SETTINGS.adsenseClient && !document.querySelector('script[data-pickgame-adsense]')) {
       document.documentElement.classList.add('ads-enabled');
-      if (document.querySelector('script[data-pickgame-adsense]')) return;
       const script = document.createElement('script');
       script.async = true;
       script.dataset.pickgameAdsense = 'true';
       script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${encodeURIComponent(SETTINGS.adsenseClient)}`;
       script.crossOrigin = 'anonymous';
       document.head.appendChild(script);
+    }
+    // Lien « Cookies » du footer → rouvre le panneau de consentement de Google
+    const fc = document.getElementById('footerCookies');
+    if (fc) fc.onclick = (e) => {
+      if (e) e.preventDefault();
+      try {
+        if (window.googlefc && typeof window.googlefc.showRevocationMessage === 'function') {
+          window.googlefc.showRevocationMessage();
+        }
+      } catch (err) {}
     };
-    const setConsent = (v) => {
-      try { localStorage.setItem('ludo_cookie_consent', v); } catch (e) {}
-      banner.classList.add('hidden');
-      if (v === 'accepted') loadConsentIntegrations();
-    };
-    if (!saved) banner.classList.remove('hidden'); // 1re visite : on demande
-    if (saved === 'accepted') loadConsentIntegrations();
-    document.getElementById('cookieAccept').onclick = () => setConsent('accepted');
-    document.getElementById('cookieRefuse').onclick = () => setConsent('refused');
-    document.getElementById('footerCookies').onclick = () => banner.classList.remove('hidden'); // rouvrir depuis le footer
-    // 👉 Ne charge tes scripts pub/analytics QUE si le consentement vaut 'accepted'.
   }
 
   /* ==========================================================
