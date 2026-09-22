@@ -475,7 +475,7 @@
       'deck.32': '32 cartes', 'deck.52': '52 cartes', 'deck.tarot': 'Tarot', 'deck.autre': 'Autre / spécial',
       'matlbl.aucun': 'Sans matériel', 'matlbl.gobelets': 'Gobelets', 'matlbl.autre': 'Accessoires', 'matlbl.cartes': 'Cartes', 'matlbl.edite': 'Jeu édité',
       'modal.material': 'Matériel nécessaire', 'modal.objective': 'Objectif du jeu', 'modal.rules': 'Règles pas à pas', 'modal.tips': 'Astuces & stratégie',
-      'modal.another': 'Un autre jeu au hasard', 'modal.like': "J'aime", 'modal.liked': 'Aimé', 'modal.prev': 'Précédent', 'modal.next': 'Suivant',
+      'modal.another': 'Un autre jeu au hasard', 'modal.fullpage': 'Voir la fiche complète & les règles', 'modal.like': "J'aime", 'modal.liked': 'Aimé', 'modal.prev': 'Précédent', 'modal.next': 'Suivant',
       'modal.alcool': "<strong>À consommer avec modération · Réservé aux +18 ans.</strong> L'abus d'alcool est dangereux pour la santé. Ne forcez jamais quiconque à boire — tous ces jeux se jouent aussi très bien sans alcool.",
       'modal.buy': 'Où se le procurer', 'buy.material': 'Matériel', 'buy.disclaimer': "Liens affiliés : sans surcoût pour vous, une petite commission peut nous revenir si vous achetez via ces liens.",
       'ad.leader': 'Emplacement publicitaire · 728 × 90', 'ad.end': 'Emplacement publicitaire',
@@ -524,7 +524,7 @@
       'deck.32': '32-card deck', 'deck.52': '52-card deck', 'deck.tarot': 'Tarot', 'deck.autre': 'Other / special',
       'matlbl.aucun': 'No equipment', 'matlbl.gobelets': 'Cups', 'matlbl.autre': 'Props', 'matlbl.cartes': 'Cards', 'matlbl.edite': 'Boxed game',
       'modal.material': 'What you need', 'modal.objective': 'Goal of the game', 'modal.rules': 'Step-by-step rules', 'modal.tips': 'Tips & strategy',
-      'modal.another': 'Another random game', 'modal.like': 'Like', 'modal.liked': 'Liked', 'modal.prev': 'Previous', 'modal.next': 'Next',
+      'modal.another': 'Another random game', 'modal.fullpage': 'See the full page & rules', 'modal.like': 'Like', 'modal.liked': 'Liked', 'modal.prev': 'Previous', 'modal.next': 'Next',
       'modal.alcool': '<strong>Drink responsibly · 18+ only.</strong> Alcohol abuse is dangerous for your health. Never pressure anyone to drink — all these games are just as fun without alcohol.',
       'modal.buy': 'Where to get it', 'buy.material': 'Material', 'buy.disclaimer': 'Affiliate links: no extra cost to you, we may earn a small commission if you buy through these links.',
       'ad.leader': 'Advertisement · 728 × 90', 'ad.end': 'Advertisement',
@@ -573,7 +573,7 @@
       'deck.32': '32 cartas', 'deck.52': '52 cartas', 'deck.tarot': 'Tarot', 'deck.autre': 'Otro / especial',
       'matlbl.aucun': 'Sin material', 'matlbl.gobelets': 'Vasos', 'matlbl.autre': 'Accesorios', 'matlbl.cartes': 'Cartas', 'matlbl.edite': 'Juego de caja',
       'modal.material': 'Material necesario', 'modal.objective': 'Objetivo del juego', 'modal.rules': 'Reglas paso a paso', 'modal.tips': 'Consejos y estrategia',
-      'modal.another': 'Otro juego al azar', 'modal.like': 'Me gusta', 'modal.liked': 'Me gusta ✓', 'modal.prev': 'Anterior', 'modal.next': 'Siguiente',
+      'modal.another': 'Otro juego al azar', 'modal.fullpage': 'Ver la ficha completa y las reglas', 'modal.like': 'Me gusta', 'modal.liked': 'Me gusta ✓', 'modal.prev': 'Anterior', 'modal.next': 'Siguiente',
       'modal.alcool': "<strong>Consumir con moderación · Solo mayores de 18 años.</strong> El abuso del alcohol es peligroso para la salud. Nunca obligues a nadie a beber — todos estos juegos funcionan igual de bien sin alcohol.",
       'modal.buy': 'Dónde conseguirlo', 'buy.material': 'Material', 'buy.disclaimer': 'Enlaces de afiliados: sin coste adicional para ti, podemos recibir una pequeña comisión si compras a través de estos enlaces.',
       'ad.leader': 'Espacio publicitario · 728 × 90', 'ad.end': 'Espacio publicitario',
@@ -847,8 +847,8 @@
     const g = L(gRaw);
     const mat = matInfo(g);
     return `
-    <button data-id="${gRaw.id}" style="animation-delay:${index * 40}ms"
-      class="game-card card-hover glass rounded-2xl p-5 text-left flex flex-col animate-fade-up group relative overflow-hidden">
+    <a href="/jeux/${gRaw.id}" data-id="${gRaw.id}" style="animation-delay:${index * 40}ms"
+      class="game-card card-hover glass rounded-2xl p-5 text-left flex flex-col animate-fade-up group relative overflow-hidden no-underline">
       <div class="absolute -right-6 -top-6 text-7xl opacity-10 group-hover:opacity-20 group-hover:scale-110 transition-all duration-300 select-none">${g.emoji}</div>
       <div class="flex items-start justify-between gap-2 relative">
         <div class="text-4xl mb-3">${g.emoji}</div>
@@ -875,7 +875,7 @@
           <i data-lucide="${mat.icon}" class="w-3 h-3"></i> ${mat.label}
         </span>
       </div>
-    </button>`;
+    </a>`;
   }
 
   function render() {
@@ -897,10 +897,10 @@
       empty.classList.add('hidden');
       grid.innerHTML = list.map((g, i) => gameCard(g, i)).join('');
       grid.querySelectorAll('.game-card').forEach(el => {
-        el.onclick = () => openModal(el.dataset.id);
+        el.onclick = (e) => { e.preventDefault(); openModal(el.dataset.id); };
       });
       grid.querySelectorAll('.like-btn').forEach(el => {
-        el.onclick = (e) => { e.stopPropagation(); toggleLike(el.dataset.like); };
+        el.onclick = (e) => { e.preventDefault(); e.stopPropagation(); toggleLike(el.dataset.like); };
       });
     }
     lucide.createIcons();
@@ -1000,6 +1000,8 @@
 
         <!-- AD — fin de règle (colle ici ton unité AdSense display) -->
         <div class="ad-slot" data-ad="fin-de-regle"><span>${t('ad.end')}</span></div>
+
+        <a href="/jeux/${id}" class="mb-3 flex items-center justify-center gap-2 bg-gold/15 border border-gold/40 text-gold font-semibold text-sm px-4 py-3 rounded-xl hover:bg-gold/25 transition no-underline">📖 ${t('modal.fullpage')}</a>
 
         <div class="grid grid-cols-3 gap-2">
           <button id="modalPrevBtn" class="chip inline-flex items-center justify-center gap-1.5 bg-white/10 border border-white/15 text-cream font-semibold px-2 py-3 rounded-xl hover:bg-white/15">
