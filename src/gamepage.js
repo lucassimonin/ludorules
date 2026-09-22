@@ -85,8 +85,13 @@ function headTags(game, settings) {
 <meta property="og:title" content="${esc(title)}" />
 <meta property="og:description" content="${esc(desc)}" />
 <meta property="og:url" content="${url}" />
+<meta property="og:image" content="${SITE}/og-image.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
 <meta name="twitter:card" content="summary_large_image" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🃏</text></svg>" />
+<meta name="twitter:image" content="${SITE}/og-image.png" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 <script type="application/ld+json">${JSON.stringify(ld)}</script>${consent}${gtm}${ads}
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
