@@ -112,9 +112,34 @@ function chip(icon, text) {
   return `<span class="inline-flex items-center gap-1.5 text-sm text-cream/85 bg-black/20 border border-white/10 rounded-lg px-2.5 py-1">${icon} ${esc(text)}</span>`;
 }
 
+// Libellés FR (repris de l'accueil) pour afficher de vrais libellés, pas les codes internes.
+const TIME_FR = { court: '< 15 min', moyen: '15-30 min', long: '45 min +' };
+const MOOD_FR = {
+  strategie: ['🧠', 'Stratégie'], ambiance: ['🎉', 'Fun'], enfants: ['🧸', 'Enfants'],
+  soiree: ['🌙', 'Soirée'], alcool: ['🍻', 'Apéro'], solitaire: ['🧘', 'Solo'],
+};
+const DECK_FR = { '32': '32 cartes', '52': '52 cartes', tarot: 'Tarot', autre: 'Autre / spécial' };
+const MATLBL_FR = { aucun: 'Sans matériel', gobelets: 'Gobelets', autre: 'Accessoires', cartes: 'Cartes', edite: 'Jeu édité' };
+
+// Libellé court + icône du matériel principal (équivalent SSR de matInfo côté accueil).
+function matShort(g) {
+  if (g.type === 'des') return { icon: '🎲', label: g.dice || MATLBL_FR.cartes };
+  if (g.type === 'edite') return { icon: '📦', label: MATLBL_FR.edite };
+  if (g.type === 'aucun') return { icon: '🗣️', label: g.gear || MATLBL_FR.aucun };
+  if (g.type === 'autre') {
+    const gear = g.gear || '';
+    if (gear.startsWith('🗣️')) return { icon: '🗣️', label: gear || MATLBL_FR.aucun };
+    if (gear.startsWith('🥤')) return { icon: '🥤', label: gear || MATLBL_FR.gobelets };
+    return { icon: '🎉', label: gear || MATLBL_FR.autre };
+  }
+  return { icon: '🃏', label: DECK_FR[g.deck] || MATLBL_FR.cartes };
+}
+
 // Page complète d'un jeu.
 function renderGamePage(game, { settings = {}, otherGames = [] } = {}) {
   const emoji = game.emoji ? esc(game.emoji) + ' ' : '';
+  const mat = matShort(game);
+  const mood = MOOD_FR[game.mood] || ['🎯', game.mood];
   const rules = Array.isArray(game.rules) ? game.rules : [];
   const rulesHtml = rules.length
     ? `<ol class="mt-3 space-y-3">${rules.map((r, i) => `<li class="flex gap-3"><span class="flex-none w-7 h-7 rounded-lg bg-gold text-felt-deep font-display font-extrabold grid place-items-center">${i + 1}</span><span class="text-cream/90 leading-relaxed pt-0.5">${esc(r)}</span></li>`).join('')}</ol>`
@@ -151,9 +176,9 @@ ${headTags(game, settings)}
 
     <div class="mt-5 flex flex-wrap gap-2">
       ${chip('👥', game.playersLabel || game.players)}
-      ${chip('⏱️', game.time)}
-      ${chip('🃏', game.material)}
-      ${chip('🎯', game.mood)}
+      ${chip('⏱️', TIME_FR[game.time] || game.time)}
+      ${chip(mat.icon, mat.label)}
+      ${chip(mood[0], mood[1])}
     </div>
 
     ${adNote}
