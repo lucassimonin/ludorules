@@ -71,6 +71,13 @@ function headTags(game, settings) {
       },
     ],
   };
+  const faq = buildFaq(game);
+  if (faq.length) {
+    ld['@graph'].push({
+      '@type': 'FAQPage',
+      mainEntity: faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+    });
+  }
 
   return `<meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -140,12 +147,29 @@ function matShort(g) {
   return { icon: '🃏', label: DECK_FR[g.deck] || MATLBL_FR.cartes };
 }
 
+// Génère une FAQ à partir des données du jeu (répond aux vraies recherches Google
+// « combien de joueurs / quel matériel / combien de temps… » + données structurées).
+function buildFaq(g) {
+  const faq = [];
+  const players = g.playersLabel || g.players;
+  if (players) faq.push({ q: `Combien de joueurs pour jouer à ${g.title} ?`, a: `${g.title} se joue à ${players}.` });
+  if (g.material) faq.push({ q: `Quel matériel faut-il pour jouer à ${g.title} ?`, a: String(g.material) });
+  const time = TIME_FR[g.time] || g.time;
+  if (time) faq.push({ q: `Combien de temps dure une partie de ${g.title} ?`, a: `Comptez environ ${time} par partie.` });
+  if (g.objective) faq.push({ q: `Quel est le but du jeu à ${g.title} ?`, a: String(g.objective) });
+  return faq;
+}
+
 // Page complète d'un jeu.
 function renderGamePage(game, { settings = {}, otherGames = [] } = {}) {
   const emoji = game.emoji ? esc(game.emoji) + ' ' : '';
   const mat = matShort(game);
   const mood = MOOD_FR[game.mood] || ['🎯', game.mood];
   const rules = Array.isArray(game.rules) ? game.rules : [];
+  const faq = buildFaq(game);
+  const faqHtml = faq.length
+    ? `<section class="mt-8"><h2 class="font-display text-2xl font-bold flex items-center gap-2">❓ Questions fréquentes</h2><div class="mt-3 space-y-3">${faq.map((f) => `<div class="glass rounded-xl p-4"><p class="font-semibold text-cream">${esc(f.q)}</p><p class="text-cream/80 mt-1 leading-relaxed">${esc(f.a)}</p></div>`).join('')}</div></section>`
+    : '';
   const rulesHtml = rules.length
     ? `<ol class="mt-3 space-y-3">${rules.map((r, i) => `<li class="flex gap-3"><span class="flex-none w-7 h-7 rounded-lg bg-gold text-felt-deep font-display font-extrabold grid place-items-center">${i + 1}</span><span class="text-cream/90 leading-relaxed pt-0.5">${esc(r)}</span></li>`).join('')}</ol>`
     : '';
@@ -195,6 +219,8 @@ ${headTags(game, settings)}
     ${rulesHtml ? `<section class="mt-8"><h2 class="font-display text-2xl font-bold flex items-center gap-2">📜 Règles du jeu</h2>${rulesHtml}</section>` : ''}
 
     ${tips}
+
+    ${faqHtml}
 
     ${others ? `<section class="mt-12 pt-8 border-t border-white/10"><h2 class="font-display text-xl font-bold mb-4">🎲 D'autres jeux à découvrir</h2><div class="grid grid-cols-2 sm:grid-cols-3 gap-3">${others}</div></section>` : ''}
 
